@@ -129,7 +129,7 @@ export default function DisneyTripPlanner() {
                     <span className="animate-pulse text-pink-500">✨</span>
                     <span className="animate-bounce text-purple-500">🌟</span>
                   </div>
-                  Cuenta Regresiva Mágica
+                  Cuenta Regresiva
                   <div className="flex gap-1">
                     <span className="animate-bounce text-purple-500">🌟</span>
                     <span className="animate-pulse text-pink-500">✨</span>

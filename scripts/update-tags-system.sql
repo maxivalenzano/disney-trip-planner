@@ -55,7 +55,7 @@ SELECT
     'attraction', 
     a.park_id,
     CASE 
-        WHEN a.type = 'ride' THEN '🎢'
+        WHEN a.type = 'ride' THEN '���'
         WHEN a.type = 'show' THEN '🎭'
         WHEN a.type = 'restaurant' THEN '🍽️'
         WHEN a.type = 'shop' THEN '🛍️'

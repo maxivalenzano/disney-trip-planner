@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
 import {
   Film,
   Plus,
@@ -18,9 +19,13 @@ import {
   Edit,
   Trash2,
   MoreHorizontal,
-  Tag,
+  TagIcon,
   Calendar,
   Camera,
+  Search,
+  Filter,
+  X,
+  Images,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
@@ -29,6 +34,7 @@ import {
   updateMovie,
   deleteMovie,
   updateMovieTags,
+  getTagsGrouped,
   type Movie,
   uploadMoviePhoto,
 } from "@/lib/supabase"
@@ -38,9 +44,23 @@ import PhotoGallery from "./photo-gallery"
 
 export default function MoviesTracker() {
   const [movies, setMovies] = useState<Movie[]>([])
+  const [filteredMovies, setFilteredMovies] = useState<Movie[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
   const { toast } = useToast()
+
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedFilterTags, setSelectedFilterTags] = useState<string[]>([])
+  const [showPhotos, setShowPhotos] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
+  const [allTags, setAllTags] = useState<any[]>([])
+
+  // Photo viewer state
+  const [selectedMoviePhotos, setSelectedMoviePhotos] = useState<{
+    movieId: string
+    photos: any[]
+  } | null>(null)
 
   const [newMovie, setNewMovie] = useState({
     title: "",
@@ -57,11 +77,15 @@ export default function MoviesTracker() {
   const [currentMovieId, setCurrentMovieId] = useState<string | null>(null)
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
-  const [selectedMovieForPhotos, setSelectedMovieForPhotos] = useState<string | null>(null)
 
   useEffect(() => {
     loadMovies()
+    loadAllTags()
   }, [])
+
+  useEffect(() => {
+    filterMovies()
+  }, [movies, searchTerm, selectedFilterTags])
 
   const loadMovies = async () => {
     try {
@@ -78,6 +102,41 @@ export default function MoviesTracker() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const loadAllTags = async () => {
+    try {
+      const tagsGrouped = await getTagsGrouped()
+      const flatTags = Object.values(tagsGrouped).flat()
+      setAllTags(flatTags)
+    } catch (error) {
+      console.error("Error loading tags:", error)
+    }
+  }
+
+  const filterMovies = () => {
+    let filtered = movies
+
+    // Filter by search term
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(
+        (movie) =>
+          movie.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          movie.notes?.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    }
+
+    // Filter by tags
+    if (selectedFilterTags.length > 0) {
+      filtered = filtered.filter((movie) => movie.tags?.some((tag) => selectedFilterTags.includes(tag.id)))
+    }
+
+    setFilteredMovies(filtered)
+  }
+
+  const clearFilters = () => {
+    setSearchTerm("")
+    setSelectedFilterTags([])
   }
 
   const handleAddMovie = async () => {
@@ -212,24 +271,6 @@ export default function MoviesTracker() {
     }
   }
 
-  const rateMovie = async (movie: Movie, rating: number) => {
-    try {
-      const updatedMovie = await updateMovie(movie.id, { rating })
-      setMovies(movies.map((m) => (m.id === movie.id ? { ...m, rating: updatedMovie.rating } : m)))
-
-      toast({
-        title: "¡Calificación guardada!",
-        description: `Le diste ${rating} estrellas a ${movie.title}`,
-      })
-    } catch (error) {
-      console.error("Error rating movie:", error)
-      toast({
-        title: "Error",
-        description: "No se pudo guardar la calificación",
-      })
-    }
-  }
-
   const openEditDialog = (movie: Movie) => {
     setEditingMovie({ ...movie })
     setSelectedTags(movie.tags?.map((tag) => tag.id) || [])
@@ -282,23 +323,95 @@ export default function MoviesTracker() {
     try {
       setUploadingPhoto(true)
 
-      // Upload each file
-      const uploadPromises = Array.from(files).map((file) => uploadMoviePhoto(movieId, file))
+      // Validar archivos antes de subir
+      const validFiles = Array.from(files).filter((file) => {
+        if (!file.type.startsWith("image/")) {
+          toast({
+            title: "Archivo no válido",
+            description: `${file.name} no es una imagen válida`,
+            variant: "destructive",
+          })
+          return false
+        }
 
-      await Promise.all(uploadPromises)
+        if (file.size > 10485760) {
+          // 10MB
+          toast({
+            title: "Archivo muy grande",
+            description: `${file.name} es demasiado grande (máximo 10MB)`,
+            variant: "destructive",
+          })
+          return false
+        }
+
+        return true
+      })
+
+      if (validFiles.length === 0) {
+        toast({
+          title: "Sin archivos válidos",
+          description: "No se encontraron imágenes válidas para subir",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Upload each valid file
+      const uploadPromises = validFiles.map(async (file, index) => {
+        try {
+          return await uploadMoviePhoto(movieId, file)
+        } catch (error) {
+          console.error(`Error uploading file ${index + 1}:`, error)
+          toast({
+            title: `Error subiendo ${file.name}`,
+            description: error instanceof Error ? error.message : "Error desconocido",
+            variant: "destructive",
+          })
+          throw error
+        }
+      })
+
+      // Esperar a que se suban todas las fotos
+      const results = await Promise.allSettled(uploadPromises)
+
+      const successful = results.filter((result) => result.status === "fulfilled").length
+      const failed = results.filter((result) => result.status === "rejected").length
 
       // Reload movies to get updated photos
       await loadMovies()
 
-      toast({
-        title: "¡Fotos subidas!",
-        description: `Se ${files.length === 1 ? "subió 1 foto" : `subieron ${files.length} fotos`} correctamente`,
-      })
+      if (successful > 0) {
+        toast({
+          title: "¡Fotos subidas!",
+          description: `Se ${successful === 1 ? "subió 1 foto" : `subieron ${successful} fotos`} correctamente${failed > 0 ? ` (${failed} fallaron)` : ""}`,
+        })
+      }
+
+      if (failed > 0 && successful === 0) {
+        toast({
+          title: "Error al subir fotos",
+          description: "No se pudo subir ninguna foto. Verifica tu conexión y configuración.",
+          variant: "destructive",
+        })
+      }
     } catch (error) {
       console.error("Error uploading photos:", error)
+
+      let errorMessage = "No se pudieron subir las fotos"
+
+      if (error instanceof Error) {
+        if (error.message.includes("bucket")) {
+          errorMessage = "El almacenamiento no está configurado. Contacta al administrador."
+        } else if (error.message.includes("network") || error.message.includes("fetch")) {
+          errorMessage = "Error de conexión. Verifica tu internet e intenta de nuevo."
+        } else {
+          errorMessage = error.message
+        }
+      }
+
       toast({
         title: "Error",
-        description: "No se pudieron subir las fotos",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -318,6 +431,21 @@ export default function MoviesTracker() {
       }
     }
     input.click()
+  }
+
+  const openPhotoViewer = (movie: Movie) => {
+    setSelectedMoviePhotos({
+      movieId: movie.id,
+      photos: movie.photos || [],
+    })
+  }
+
+  const closePhotoViewer = () => {
+    setSelectedMoviePhotos(null)
+  }
+
+  const getFilteredTagsForDisplay = () => {
+    return selectedFilterTags.map((tagId) => allTags.find((tag) => tag.id === tagId)).filter(Boolean) as any[]
   }
 
   if (loading) {
@@ -340,17 +468,132 @@ export default function MoviesTracker() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-purple-700">Películas Disney</h2>
+          <h2 className="text-2xl font-bold text-purple-700">Películas y Documentales</h2>
           <p className="text-sm text-gray-600">
-            {movies.filter((m) => m.watched).length} de {movies.length} películas vistas (
-            {Math.round((movies.filter((m) => m.watched).length / movies.length) * 100)}%)
+            {filteredMovies.filter((m) => m.watched).length} de {filteredMovies.length} películas vistas (
+            {filteredMovies.length > 0
+              ? Math.round((filteredMovies.filter((m) => m.watched).length / filteredMovies.length) * 100)
+              : 0}
+            %)
           </p>
         </div>
-        <Button onClick={openNewDialog} className="bg-gradient-to-r from-red-500 to-pink-500">
-          <Plus className="w-4 h-4 mr-2" />
-          Nueva Película
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2">
+            <Filter className="w-4 h-4" />
+            Filtros
+            {(searchTerm || selectedFilterTags.length > 0) && (
+              <Badge variant="secondary" className="ml-1">
+                {(searchTerm ? 1 : 0) + selectedFilterTags.length}
+              </Badge>
+            )}
+          </Button>
+          <Button onClick={openNewDialog} className="bg-gradient-to-r from-red-500 to-pink-500">
+            <Plus className="w-4 h-4 mr-2" />
+            Nueva Película
+          </Button>
+        </div>
       </div>
+
+      {/* Filters Section */}
+      {showFilters && (
+        <Card className="bg-gray-50 border-gray-200">
+          <CardContent className="p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-medium text-gray-700">Filtros</h3>
+              {(searchTerm || selectedFilterTags.length > 0) && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-gray-500">
+                  <X className="w-4 h-4 mr-1" />
+                  Limpiar
+                </Button>
+              )}
+            </div>
+
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Buscar por título o notas..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Tag Filter */}
+            <div>
+              <Label className="text-sm font-medium text-gray-700 mb-2 block">Filtrar por etiquetas</Label>
+              <div className="flex flex-wrap gap-2">
+                {allTags.slice(0, 10).map((tag) => (
+                  <Badge
+                    key={tag.id}
+                    variant={selectedFilterTags.includes(tag.id) ? "default" : "outline"}
+                    className="cursor-pointer flex items-center gap-1"
+                    onClick={() => {
+                      if (selectedFilterTags.includes(tag.id)) {
+                        setSelectedFilterTags(selectedFilterTags.filter((id) => id !== tag.id))
+                      } else {
+                        setSelectedFilterTags([...selectedFilterTags, tag.id])
+                      }
+                    }}
+                  >
+                    <span className="text-xs">{tag.icon}</span>
+                    <span>{tag.name}</span>
+                    {tag.parent_name && <span className="text-gray-500 text-xs">({tag.parent_name})</span>}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Active Filters Display */}
+            {(searchTerm || selectedFilterTags.length > 0) && (
+              <div className="pt-2 border-t">
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span className="text-sm text-gray-600">Filtros activos:</span>
+                  {searchTerm && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <Search className="w-3 h-3" />"{searchTerm}"
+                      <X className="w-3 h-3 cursor-pointer" onClick={() => setSearchTerm("")} />
+                    </Badge>
+                  )}
+                  {getFilteredTagsForDisplay().map((tag) => (
+                    <Badge key={tag.id} variant="secondary" className="flex items-center gap-1">
+                      <span className="text-xs">{tag.icon}</span>
+                      {tag.name}
+                      <X
+                        className="w-3 h-3 cursor-pointer"
+                        onClick={() => setSelectedFilterTags(selectedFilterTags.filter((id) => id !== tag.id))}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Photo Display Toggle */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Images className="w-5 h-5 text-blue-600" />
+              <div>
+                <h3 className="font-medium text-blue-700">Visualización de Fotos</h3>
+                <p className="text-sm text-blue-600">
+                  {showPhotos ? "Las fotos se muestran expandidas" : "Solo se muestra el contador de fotos"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="show-photos" className="text-sm text-blue-700">
+                Mostrar fotos
+              </Label>
+              <Switch id="show-photos" checked={showPhotos} onCheckedChange={setShowPhotos} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Dialog para Película */}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -442,7 +685,7 @@ export default function MoviesTracker() {
                   onClick={() => setOpenTagSelector(true)}
                   className="flex items-center gap-2"
                 >
-                  <Tag className="w-4 h-4" />
+                  <TagIcon className="w-4 h-4" />
                   {selectedTags.length > 0 ? `${selectedTags.length} seleccionadas` : "Seleccionar etiquetas"}
                 </Button>
               </div>
@@ -492,6 +735,24 @@ export default function MoviesTracker() {
         }}
       />
 
+      {/* Photo Viewer Dialog */}
+      {selectedMoviePhotos && (
+        <Dialog open={!!selectedMoviePhotos} onOpenChange={closePhotoViewer}>
+          <DialogContent className="max-w-4xl max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>Fotos de la Película</DialogTitle>
+            </DialogHeader>
+            <div className="max-h-[70vh] overflow-y-auto">
+              <PhotoGallery
+                photos={selectedMoviePhotos.photos}
+                onPhotosChange={loadMovies}
+                onAddPhoto={() => openPhotoUpload(selectedMoviePhotos.movieId)}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
       {/* Progress Bar */}
       <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
         <CardContent className="p-4">
@@ -500,12 +761,23 @@ export default function MoviesTracker() {
             <div className="flex-1">
               <div className="flex justify-between text-sm mb-1">
                 <span>Progreso de visualización</span>
-                <span>{Math.round((movies.filter((m) => m.watched).length / movies.length) * 100)}%</span>
+                <span>
+                  {filteredMovies.length > 0
+                    ? Math.round((filteredMovies.filter((m) => m.watched).length / filteredMovies.length) * 100)
+                    : 0}
+                  %
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(movies.filter((m) => m.watched).length / movies.length) * 100}%` }}
+                  style={{
+                    width: `${
+                      filteredMovies.length > 0
+                        ? (filteredMovies.filter((m) => m.watched).length / filteredMovies.length) * 100
+                        : 0
+                    }%`,
+                  }}
                 ></div>
               </div>
             </div>
@@ -514,17 +786,28 @@ export default function MoviesTracker() {
       </Card>
 
       {/* Movies List */}
-      {movies.length === 0 ? (
+      {filteredMovies.length === 0 ? (
         <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
           <CardContent className="text-center py-12">
             <Film className="w-16 h-16 text-purple-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-purple-700 mb-2">¡No hay películas aún!</h3>
-            <p className="text-purple-600 mb-4">Comienza agregando películas Disney para ver antes del viaje</p>
+            <h3 className="text-lg font-medium text-purple-700 mb-2">
+              {movies.length === 0 ? "¡No hay películas aún!" : "No se encontraron películas"}
+            </h3>
+            <p className="text-purple-600 mb-4">
+              {movies.length === 0
+                ? "Comienza agregando películas Disney para ver antes del viaje"
+                : "Intenta ajustar los filtros para encontrar lo que buscas"}
+            </p>
+            {movies.length > 0 && (
+              <Button variant="outline" onClick={clearFilters}>
+                Limpiar filtros
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
-          {movies.map((movie) => (
+          {filteredMovies.map((movie) => (
             <Card key={movie.id} className={`${movie.watched ? "bg-green-50 border-green-200" : "bg-white"} group`}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
@@ -569,14 +852,28 @@ export default function MoviesTracker() {
                       </div>
                     )}
 
-                    {/* Photo Gallery */}
+                    {/* Photo Display */}
                     {movie.photos && movie.photos.length > 0 && (
                       <div className="mb-3">
-                        <PhotoGallery
-                          photos={movie.photos}
-                          onPhotosChange={loadMovies}
-                          onAddPhoto={() => openPhotoUpload(movie.id)}
-                        />
+                        {showPhotos ? (
+                          <PhotoGallery
+                            photos={movie.photos}
+                            onPhotosChange={loadMovies}
+                            onAddPhoto={() => openPhotoUpload(movie.id)}
+                          />
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openPhotoViewer(movie)}
+                            className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
+                          >
+                            <Images className="w-4 h-4 text-blue-600" />
+                            <span className="text-blue-700">
+                              {movie.photos.length} {movie.photos.length === 1 ? "foto" : "fotos"}
+                            </span>
+                          </Button>
+                        )}
                       </div>
                     )}
 
@@ -604,7 +901,7 @@ export default function MoviesTracker() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem onClick={() => openTagsDialog(movie)}>
-                        <Tag className="w-4 h-4 mr-2" />
+                        <TagIcon className="w-4 h-4 mr-2" />
                         Etiquetas
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openPhotoUpload(movie.id)} disabled={uploadingPhoto}>

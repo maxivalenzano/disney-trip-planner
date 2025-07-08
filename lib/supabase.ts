@@ -319,31 +319,118 @@ export const deleteMovie = async (id: string) => {
   }
 }
 
-// Funciones para Movie Photos
+// Actualizar la función uploadMoviePhoto para mejor manejo de errores y verificación del bucket
+
+// Función para verificar/crear el bucket
+export const ensureMoviePhotosBucket = async () => {
+  try {
+    // Primero intentar hacer una operación simple en el bucket para verificar si existe
+    const { data: testFiles, error: testError } = await supabase.storage.from("movie-photos").list("", { limit: 1 })
+
+    // Si no hay error, el bucket existe y funciona
+    if (!testError) {
+      console.log("Bucket 'movie-photos' ya existe y está funcionando")
+      return true
+    }
+
+    // Si el error es "Bucket not found", intentar crear el bucket
+    if (testError.message.includes("Bucket not found")) {
+      console.log("Bucket no encontrado, intentando crear...")
+
+      const { data: newBucket, error: createError } = await supabase.storage.createBucket("movie-photos", {
+        public: true,
+        allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+        fileSizeLimit: 10485760, // 10MB
+      })
+
+      if (createError) {
+        console.error("Error creating bucket:", createError)
+
+        // Si el error es que ya existe, eso está bien
+        if (createError.message.includes("already exists") || createError.message.includes("duplicate")) {
+          console.log("El bucket ya existe, continuando...")
+          return true
+        }
+
+        throw new Error(
+          "No se pudo crear el almacenamiento de fotos. El bucket 'movie-photos' debe ser creado manualmente en Supabase Storage con permisos públicos.",
+        )
+      }
+
+      console.log("Bucket 'movie-photos' creado exitosamente")
+      return true
+    }
+
+    // Para cualquier otro error, asumir que el bucket existe pero hay problemas de permisos
+    console.warn("Advertencia al verificar bucket:", testError.message)
+    console.log("Asumiendo que el bucket existe, continuando...")
+    return true
+  } catch (error) {
+    console.error("Error ensuring bucket:", error)
+
+    // Si llegamos aquí, probablemente el bucket existe pero hay problemas de configuración
+    console.log("Asumiendo que el bucket existe, continuando con la subida...")
+    return true
+  }
+}
+
+// Actualizar la función uploadMoviePhoto
 export const uploadMoviePhoto = async (movieId: string, file: File, caption?: string) => {
   try {
+    // Verificar que el archivo sea una imagen
+    if (!file.type.startsWith("image/")) {
+      throw new Error("Solo se permiten archivos de imagen")
+    }
+
+    // Verificar tamaño del archivo (10MB máximo)
+    if (file.size > 10485760) {
+      throw new Error("El archivo es demasiado grande. Máximo 10MB permitido.")
+    }
+
+    // Verificar/crear el bucket
+    await ensureMoviePhotosBucket()
+
     // Generate unique filename
-    const fileExt = file.name.split(".").pop()
-    const fileName = `${movieId}/${Date.now()}.${fileExt}`
+    const fileExt = file.name.split(".").pop()?.toLowerCase()
+    const timestamp = Date.now()
+    const randomString = Math.random().toString(36).substring(2, 8)
+    const fileName = `${movieId}/${timestamp}_${randomString}.${fileExt}`
     const filePath = `movie-photos/${fileName}`
 
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("movie-photos")
-      .upload(filePath, file, {
+      .upload(fileName, file, {
         cacheControl: "3600",
         upsert: false,
       })
 
     if (uploadError) {
       console.error("Error uploading photo:", uploadError)
-      throw uploadError
+
+      // Mensajes de error más específicos
+      if (uploadError.message.includes("Bucket not found")) {
+        throw new Error(
+          "El almacenamiento de fotos no está configurado. Por favor, crea el bucket 'movie-photos' en Supabase Storage.",
+        )
+      } else if (uploadError.message.includes("File size too large")) {
+        throw new Error("El archivo es demasiado grande. Máximo 10MB permitido.")
+      } else if (uploadError.message.includes("Invalid file type")) {
+        throw new Error("Tipo de archivo no válido. Solo se permiten imágenes.")
+      } else {
+        throw new Error(`Error al subir la foto: ${uploadError.message}`)
+      }
     }
 
     // Get public URL
     const {
       data: { publicUrl },
-    } = supabase.storage.from("movie-photos").getPublicUrl(filePath)
+    } = supabase.storage.from("movie-photos").getPublicUrl(fileName)
+
+    // Verificar que la URL sea válida
+    if (!publicUrl) {
+      throw new Error("No se pudo generar la URL pública de la foto")
+    }
 
     // Save photo record to database
     const { data: photoData, error: dbError } = await supabase
@@ -351,7 +438,7 @@ export const uploadMoviePhoto = async (movieId: string, file: File, caption?: st
       .insert({
         movie_id: movieId,
         photo_url: publicUrl,
-        photo_path: filePath,
+        photo_path: fileName, // Guardar solo el nombre del archivo, no la ruta completa
         caption: caption || null,
       })
       .select()
@@ -359,7 +446,15 @@ export const uploadMoviePhoto = async (movieId: string, file: File, caption?: st
 
     if (dbError) {
       console.error("Error saving photo to database:", dbError)
-      throw dbError
+
+      // Intentar limpiar el archivo subido si falla la base de datos
+      try {
+        await supabase.storage.from("movie-photos").remove([fileName])
+      } catch (cleanupError) {
+        console.error("Error cleaning up uploaded file:", cleanupError)
+      }
+
+      throw new Error("Error al guardar la información de la foto en la base de datos")
     }
 
     return photoData
@@ -369,6 +464,7 @@ export const uploadMoviePhoto = async (movieId: string, file: File, caption?: st
   }
 }
 
+// Actualizar la función deleteMoviePhoto
 export const deleteMoviePhoto = async (photoId: string) => {
   try {
     // Get photo data first
@@ -380,7 +476,11 @@ export const deleteMoviePhoto = async (photoId: string) => {
 
     if (fetchError) {
       console.error("Error fetching photo:", fetchError)
-      throw fetchError
+      throw new Error("No se pudo encontrar la información de la foto")
+    }
+
+    if (!photo) {
+      throw new Error("Foto no encontrada")
     }
 
     // Delete from storage
@@ -396,7 +496,7 @@ export const deleteMoviePhoto = async (photoId: string) => {
 
     if (dbError) {
       console.error("Error deleting photo from database:", dbError)
-      throw dbError
+      throw new Error("Error al eliminar la foto de la base de datos")
     }
 
     return true
