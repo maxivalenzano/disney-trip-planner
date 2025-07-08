@@ -488,8 +488,7 @@ export default function MoviesTracker() {
             )}
           </Button>
           <Button onClick={openNewDialog} className="bg-gradient-to-r from-red-500 to-pink-500">
-            <Plus className="w-4 h-4 mr-2" />
-            Nueva Película
+            <Plus className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -828,11 +827,10 @@ export default function MoviesTracker() {
                       <div className="flex items-center gap-1 mb-2">
                         <Calendar className="w-4 h-4 text-blue-500" />
                         <span className="text-sm text-blue-600 font-medium">
-                          Programada para:{" "}
                           {new Date(movie.watch_date).toLocaleDateString("es-ES", {
                             weekday: "long",
                             year: "numeric",
-                            month: "long",
+                            month: "short",
                             day: "numeric",
                           })}
                         </span>
