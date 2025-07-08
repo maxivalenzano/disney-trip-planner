@@ -9,7 +9,22 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Disney Trip Planner",
   description: "Planifica tu viaje mágico a Disney World",
-    generator: 'v0.dev'
+  generator: "v0.dev",
+  icons: {
+    icon: [
+      {
+        url: "/favicon.png",
+        type: "image/svg+xml",
+      },
+      {
+        url: "/favicon.ico",
+        sizes: "16x16",
+        type: "image/x-icon",
+      },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/favicon.png",
+  },
 }
 
 export default function RootLayout({
@@ -19,6 +34,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
+      <head>
+        <link rel="icon" href="/favicon.png" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.ico" sizes="16x16" type="image/x-icon" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
+      </head>
       <body className={inter.className}>
         {children}
         <Toaster />
