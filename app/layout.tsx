@@ -31,7 +31,8 @@ export const metadata: Metadata = {
     telephone: false,
     email: false,
     address: false
-  }
+  },
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
