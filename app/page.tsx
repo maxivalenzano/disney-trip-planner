@@ -174,14 +174,14 @@ export default function DisneyTripPlanner() {
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
-                Disney Dream Planner
+                Disney Planner
               </h1>
               <p className="text-sm opacity-90 font-medium">Donde los sueños cobran vida ✨</p>
             </div>
           </div>
           <div className="text-center bg-white/20 backdrop-blur-sm rounded-2xl p-3 border border-white/30">
             <div className="text-3xl font-bold text-yellow-300 animate-pulse">{daysUntilTrip}</div>
-            <div className="text-xs font-medium">días soñados</div>
+            <div className="text-xs font-medium">días</div>
           </div>
         </div>
       </div>
