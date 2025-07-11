@@ -527,7 +527,6 @@ export default function ParksManager() {
                   <div key={attraction.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg group">
                     <div className="flex items-center gap-2">
                       {getTypeIcon(attraction.type)}
-                      {getPriorityIcon(attraction.priority)}
                     </div>
                     <div className="flex-1">
                       <h4 className="font-medium">{attraction.name}</h4>

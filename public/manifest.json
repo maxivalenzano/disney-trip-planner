@@ -1,0 +1,77 @@
+{
+  "name": "Disney Magic Planner",
+  "short_name": "Magic Planner",
+  "description": "Planifica tu aventura mágica a Disney",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es",
+  "categories": ["travel", "entertainment", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Parques",
+      "short_name": "Parques",
+      "description": "Gestionar parques de Disney",
+      "url": "/?tab=parks",
+      "icons": [
+        {
+          "src": "/shortcuts/shortcut-parks.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Películas",
+      "short_name": "Películas",
+      "description": "Gestionar películas de Disney",
+      "url": "/?tab=movies",
+      "icons": [
+        {
+          "src": "/shortcuts/shortcut-movies.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Tareas",
+      "short_name": "Tareas",
+      "description": "Gestionar tareas del viaje",
+      "url": "/?tab=tasks",
+      "icons": [
+        {
+          "src": "/shortcuts/shortcut-tasks.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Notas",
+      "short_name": "Notas",
+      "description": "Gestionar notas del viaje",
+      "url": "/?tab=notes",
+      "icons": [
+        {
+          "src": "/shortcuts/shortcut-notes.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+} 

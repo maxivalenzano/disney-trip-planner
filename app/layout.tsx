@@ -2,29 +2,36 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { Toaster } from "@/components/ui/toaster"
+import { ThemeProvider } from "@/components/theme-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Disney Trip Planner",
-  description: "Planifica tu viaje mágico a Disney World",
-  generator: "v0.dev",
-  icons: {
-    icon: [
-      {
-        url: "/favicon.png",
-        type: "image/svg+xml",
-      },
-      {
-        url: "/favicon.ico",
-        sizes: "16x16",
-        type: "image/x-icon",
-      },
-    ],
-    shortcut: "/favicon.ico",
-    apple: "/favicon.png",
+  title: "Disney Magic Planner - Tu Aventura Mágica",
+  description: "Planifica tu viaje mágico a Disney con nuestra aplicación especializada. Organiza parques, películas, tareas y más en un lugar mágico.",
+  keywords: "Disney, planificador, viaje, parques, películas, magia, aventura",
+  authors: [{ name: "Disney Magic Planner" }],
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover'
   },
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#667eea' },
+    { media: '(prefers-color-scheme: dark)', color: '#764ba2' }
+  ],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Disney Magic Planner'
+  },
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false
+  }
 }
 
 export default function RootLayout({
@@ -33,15 +40,27 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.png" type="image/svg+xml" />
-        <link rel="icon" href="/favicon.ico" sizes="16x16" type="image/x-icon" />
-        <link rel="apple-touch-icon" href="/favicon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Disney Magic Planner" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#667eea" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <link rel="icon" href="/icons/favicon.ico" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={inter.className}>
-        {children}
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )
