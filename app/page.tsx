@@ -167,7 +167,7 @@ export default function DisneyTripPlanner() {
         </div>
         
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
             <div className="relative">
               <Castle className="w-10 h-10 text-yellow-300 animate-pulse" />
               <div className="absolute -top-1 -right-1 text-lg animate-bounce">✨</div>
@@ -179,7 +179,7 @@ export default function DisneyTripPlanner() {
               <p className="text-sm opacity-90 font-medium">Donde los sueños cobran vida ✨</p>
             </div>
           </div>
-          <div className="text-center bg-white/20 backdrop-blur-sm rounded-2xl p-3 border border-white/30">
+          <div className="text-center bg-white/20 backdrop-blur-sm rounded-2xl py-2 px-1 border border-white/30">
             <div className="text-3xl font-bold text-yellow-300 animate-pulse">{daysUntilTrip}</div>
             <div className="text-xs font-medium">días</div>
           </div>
