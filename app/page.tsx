@@ -176,7 +176,7 @@ export default function DisneyTripPlanner() {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
                 Disney Planner
               </h1>
-              <p className="text-sm opacity-90 font-medium">Donde los sueños cobran vida ✨</p>
+              <p className="text-sm opacity-90 font-medium">Team J&M ✨</p>
             </div>
           </div>
           <div className="text-center bg-white/20 backdrop-blur-sm rounded-2xl py-2 px-1 border border-white/30">
