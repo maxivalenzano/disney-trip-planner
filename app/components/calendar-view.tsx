@@ -217,16 +217,6 @@ export default function CalendarView() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-purple-700">Calendario del Viaje</h2>
-        {selectedDay && (
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setSelectedDay(null)}
-            className="text-purple-600"
-          >
-            Limpiar selección
-          </Button>
-        )}
       </div>
 
       <Card>
