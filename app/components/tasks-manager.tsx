@@ -236,7 +236,7 @@ export default function TasksManager() {
       case "medium":
         return "text-yellow-600 bg-yellow-50 border-yellow-200"
       case "low":
-        return "text-green-600 bg-green-50 border-green-200"
+        return "text-blue-600 bg-blue-50 border-blue-200"
       default:
         return "text-gray-600 bg-gray-50 border-gray-200"
     }
@@ -249,7 +249,7 @@ export default function TasksManager() {
       case "medium":
         return <Clock className="w-4 h-4 text-yellow-500" />
       case "low":
-        return <CheckSquare className="w-4 h-4 text-green-500" />
+        return <CheckSquare className="w-4 h-4 text-blue-500" />
       default:
         return null
     }
@@ -285,9 +285,6 @@ export default function TasksManager() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-purple-700">Tareas del Viaje</h2>
-          <p className="text-sm text-gray-600">
-            {completedCount} de {totalCount} tareas completadas ({Math.round(progressPercentage)}%)
-          </p>
         </div>
         <Button onClick={openNewDialog} className="bg-gradient-to-r from-green-500 to-blue-500">
           <Plus className="w-4 h-4 mr-2" />
@@ -427,8 +424,12 @@ export default function TasksManager() {
             <CheckSquare className="w-8 h-8 text-green-600" />
             <div className="flex-1">
               <div className="flex justify-between text-sm mb-1">
-                <span>Progreso de las tareas</span>
-                <span>{Math.round(progressPercentage)}%</span>
+                <span className="font-medium text-green-700">
+                  {completedCount} de {totalCount} tareas completadas
+                </span>
+                <span className="font-bold text-green-600">
+                  {Math.round(progressPercentage)}%
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded h-2">
                 <div className="bg-green-500 h-2 rounded" style={{ width: `${progressPercentage}%` }}></div>

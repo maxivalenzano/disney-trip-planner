@@ -324,6 +324,15 @@ export default function ParksManager() {
     }
   }
 
+  const sortAttractionsByPriority = (attractions: Attraction[]) => {
+    const priorityOrder = { high: 3, medium: 2, low: 1 }
+    return attractions.sort((a, b) => {
+      const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 0
+      const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 0
+      return priorityB - priorityA // Orden descendente (alta prioridad primero)
+    })
+  }
+
   const toggleParkExpansion = (parkId: string) => {
     setExpandedParks(prev => {
       const newExpanded = new Set(prev)
@@ -546,7 +555,7 @@ export default function ParksManager() {
               <CollapsibleContent>
                 <CardContent className="p-4">
                   <div className="space-y-3">
-                    {park.attractions?.map((attraction) => (
+                    {sortAttractionsByPriority(park.attractions || []).map((attraction) => (
                       <div key={attraction.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg group">
                         <div className="flex items-center gap-2">
                           {getTypeIcon(attraction.type)}
