@@ -1,6 +1,6 @@
 {
   "name": "Disney Magic Planner",
-  "short_name": "Magic Planner",
+  "short_name": "Disney Planner",
   "description": "Planifica tu aventura mágica a Disney",
   "start_url": "/",
   "display": "standalone",

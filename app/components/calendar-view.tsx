@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Calendar, Film, CheckSquare, MapPin } from "lucide-react"
+import { ChevronLeft, ChevronRight, Calendar, Film, CheckSquare, MapPin, Clock, ExternalLink } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { getMovies, getTasks } from "@/lib/supabase"
 
 interface CalendarEvent {
@@ -14,12 +15,18 @@ interface CalendarEvent {
   color: string
   completed?: boolean
   watched?: boolean
+  description?: string
+  priority?: string
+  disney_plus_link?: string
+  due_date?: string
+  watch_date?: string
 }
 
 export default function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedDay, setSelectedDay] = useState<number | null>(null)
 
   const monthNames = [
     "Enero",
@@ -58,6 +65,9 @@ export default function CalendarView() {
             type: "movie" as const,
             color: movie.watched ? "bg-green-100 text-green-700" : "bg-purple-100 text-purple-700",
             watched: movie.watched,
+            description: movie.notes || undefined,
+            disney_plus_link: movie.disney_plus_link || undefined,
+            watch_date: movie.watch_date,
           })) || []
 
       // Load tasks with due dates
@@ -72,34 +82,12 @@ export default function CalendarView() {
             type: "task" as const,
             color: task.completed ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700",
             completed: task.completed,
+            description: task.description || undefined,
+            priority: task.priority,
+            due_date: task.due_date,
           })) || []
 
-      // Static events (you can expand this later)
-      const staticEvents: CalendarEvent[] = [
-        {
-          id: "flight-1",
-          title: "Vuelo a Orlando",
-          date: "2024-06-15",
-          type: "flight",
-          color: "bg-orange-100 text-orange-700",
-        },
-        {
-          id: "park-1",
-          title: "Magic Kingdom",
-          date: "2024-06-16",
-          type: "park",
-          color: "bg-yellow-100 text-yellow-700",
-        },
-        {
-          id: "park-2",
-          title: "EPCOT",
-          date: "2024-06-17",
-          type: "park",
-          color: "bg-yellow-100 text-yellow-700",
-        },
-      ]
-
-      setEvents([...movieEvents, ...taskEvents, ...staticEvents])
+      setEvents([...movieEvents, ...taskEvents])
     } catch (error) {
       console.error("Error loading calendar events:", error)
     } finally {
@@ -159,6 +147,57 @@ export default function CalendarView() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
   }
 
+  const getSelectedDayEvents = () => {
+    if (!selectedDay) return []
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")}`
+    return events.filter((event) => event.date === dateStr)
+  }
+
+  const handleDayClick = (day: number | null) => {
+    if (!day) return
+    const dayEvents = getEventsForDate(day)
+    if (dayEvents) {
+      setSelectedDay(selectedDay === day ? null : day)
+    }
+  }
+
+  const getSelectedDateString = () => {
+    if (!selectedDay) return ""
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDay)
+    return date.toLocaleDateString("es-ES", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-100 text-red-700 border-red-300"
+      case "medium":
+        return "bg-yellow-100 text-yellow-700 border-yellow-300"
+      case "low":
+        return "bg-green-100 text-green-700 border-green-300"
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-300"
+    }
+  }
+
+  const getPriorityText = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "Alta"
+      case "medium":
+        return "Media"
+      case "low":
+        return "Baja"
+      default:
+        return "Normal"
+    }
+  }
+
   const days = getDaysInMonth(currentDate)
 
   if (loading) {
@@ -172,14 +211,26 @@ export default function CalendarView() {
     )
   }
 
+  const selectedDayEvents = getSelectedDayEvents()
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-purple-700">Calendario del Viaje</h2>
+        {selectedDay && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setSelectedDay(null)}
+            className="text-purple-600"
+          >
+            Limpiar selección
+          </Button>
+        )}
       </div>
 
       <Card>
-        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-3">
           <div className="flex items-center justify-between">
             <Button variant="ghost" size="icon" onClick={previousMonth} className="text-white hover:bg-white/20">
               <ChevronLeft className="w-4 h-4" />
@@ -211,21 +262,31 @@ export default function CalendarView() {
                 new Date().getDate() === day &&
                 new Date().getMonth() === currentDate.getMonth() &&
                 new Date().getFullYear() === currentDate.getFullYear()
+              const isSelected = selectedDay === day
+              const hasEvents = dayEvents.length > 0
 
               return (
                 <div
                   key={index}
-                  className={`min-h-[80px] p-1 border-r border-b ${
-                    day ? "bg-white" : "bg-gray-50"
-                  } ${isToday ? "bg-blue-50" : ""}`}
+                  className={`min-h-[80px] p-1 border-r border-b cursor-pointer transition-colors ${
+                    day ? "bg-white hover:bg-gray-50" : "bg-gray-50"
+                  } ${isToday ? "bg-blue-50" : ""} ${isSelected ? "bg-purple-50 ring-2 ring-purple-300" : ""}`}
+                  onClick={() => handleDayClick(day)}
                 >
                   {day && (
                     <>
-                      <div className={`text-sm font-medium mb-1 ${isToday ? "text-blue-600" : "text-gray-900"}`}>
-                        {day}
+                      <div className={`text-sm font-medium mb-1 flex items-center justify-between ${
+                        isToday ? "text-blue-600" : "text-gray-900"
+                      } ${isSelected ? "text-purple-700" : ""}`}>
+                        <span>{day}</span>
+                        {hasEvents && (
+                          <span className="bg-purple-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                            {dayEvents.length}
+                          </span>
+                        )}
                       </div>
                       <div className="space-y-1">
-                        {dayEvents.map((event) => (
+                        {dayEvents.slice(0, 2).map((event) => (
                           <div
                             key={event.id}
                             className={`text-xs p-1 rounded ${event.color} flex items-center gap-1 relative`}
@@ -236,6 +297,11 @@ export default function CalendarView() {
                             {event.type === "task" && event.completed && <span className="text-green-600">✓</span>}
                           </div>
                         ))}
+                        {dayEvents.length > 2 && (
+                          <div className="text-xs text-gray-500 text-center">
+                            +{dayEvents.length - 2} más
+                          </div>
+                        )}
                       </div>
                     </>
                   )}
@@ -246,7 +312,69 @@ export default function CalendarView() {
         </CardContent>
       </Card>
 
-      {/* Legend */}
+      {/* Selected Day Events */}
+      {selectedDay && selectedDayEvents.length > 0 && (
+        <Card className="bg-purple-50 border-purple-200">
+          <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Actividades del {getSelectedDateString()}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="space-y-3">
+              {selectedDayEvents.map((event) => (
+                <Card key={event.id} className={`${event.color} border-2`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 mt-1">
+                        {getEventIcon(event.type)}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-semibold text-lg">{event.title}</h4>
+                          {event.type === "movie" && event.watched && (
+                            <Badge variant="outline" className="bg-green-100 text-green-700">
+                              ✓ Vista
+                            </Badge>
+                          )}
+                          {event.type === "task" && event.completed && (
+                            <Badge variant="outline" className="bg-green-100 text-green-700">
+                              ✓ Completada
+                            </Badge>
+                          )}
+                          {event.type === "task" && event.priority && (
+                            <Badge variant="outline" className={getPriorityColor(event.priority)}>
+                              {getPriorityText(event.priority)}
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        {event.description && (
+                          <p className="text-sm text-gray-600 mb-2">{event.description}</p>
+                        )}
+                        
+                        <div className="flex items-center gap-4 text-sm text-gray-500">                          
+                          {event.disney_plus_link && (
+                            <Button variant="outline" size="sm" asChild>
+                              <a href={event.disney_plus_link} target="_blank" rel="noopener noreferrer">
+                                Ver en Disney+
+                                <ExternalLink className="w-3 h-3 ml-1" />
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Legend 
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Leyenda</CardTitle>
@@ -276,10 +404,15 @@ export default function CalendarView() {
                 <span className="text-green-600">✓</span>
                 <span>Completado/Visto</span>
               </div>
+              <div className="flex items-center gap-1">
+                <span className="bg-purple-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">3</span>
+                <span>Número de actividades</span>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
+      */}
     </div>
   )
 }

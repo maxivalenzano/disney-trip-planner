@@ -7,10 +7,10 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Disney Magic Planner - Tu Aventura Mágica",
+  title: "Disney Planner - Tu Aventura Mágica",
   description: "Planifica tu viaje mágico a Disney con nuestra aplicación especializada. Organiza parques, películas, tareas y más en un lugar mágico.",
   keywords: "Disney, planificador, viaje, parques, películas, magia, aventura",
-  authors: [{ name: "Disney Magic Planner" }],
+  authors: [{ name: "Disney Planner" }],
   viewport: {
     width: 'device-width',
     initialScale: 1,
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Disney Magic Planner'
+    title: 'Disney Planner'
   },
   formatDetection: {
     telephone: false,
@@ -45,7 +45,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Disney Magic Planner" />
+        <meta name="apple-mobile-web-app-title" content="Disney Planner" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#667eea" />
         <meta name="msapplication-tap-highlight" content="no" />
