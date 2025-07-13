@@ -469,13 +469,6 @@ export default function MoviesTracker() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-purple-700">Películas y Documentales</h2>
-          <p className="text-sm text-gray-600">
-            {filteredMovies.filter((m) => m.watched).length} de {filteredMovies.length} películas vistas (
-            {filteredMovies.length > 0
-              ? Math.round((filteredMovies.filter((m) => m.watched).length / filteredMovies.length) * 100)
-              : 0}
-            %)
-          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2">
@@ -567,32 +560,18 @@ export default function MoviesTracker() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
-      )}
 
-      {/* Photo Display Toggle */}
-      <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Images className="w-5 h-5 text-blue-600" />
-              <div>
-                <h3 className="font-medium text-blue-700">Visualización de Fotos</h3>
-                <p className="text-sm text-blue-600">
-                  {showPhotos ? "Las fotos se muestran expandidas" : "Solo se muestra el contador de fotos"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="show-photos" className="text-sm text-blue-700">
+            {/* Photo Display Toggle */}
+            <div className="flex items-center justify-end gap-2 text-sm text-gray-600">
+              <Images className="w-4 h-4" />
+              <Label htmlFor="show-photos" className="text-sm">
                 Mostrar fotos
               </Label>
               <Switch id="show-photos" checked={showPhotos} onCheckedChange={setShowPhotos} />
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Dialog para Película */}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -759,8 +738,10 @@ export default function MoviesTracker() {
             <Film className="w-8 h-8 text-purple-600" />
             <div className="flex-1">
               <div className="flex justify-between text-sm mb-1">
-                <span>Progreso de visualización</span>
-                <span>
+                <span className="font-medium text-purple-700">
+                  {filteredMovies.filter((m) => m.watched).length} de {filteredMovies.length} películas vistas
+                </span>
+                <span className="font-bold text-purple-600">
                   {filteredMovies.length > 0
                     ? Math.round((filteredMovies.filter((m) => m.watched).length / filteredMovies.length) * 100)
                     : 0}
@@ -771,11 +752,10 @@ export default function MoviesTracker() {
                 <div
                   className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
                   style={{
-                    width: `${
-                      filteredMovies.length > 0
-                        ? (filteredMovies.filter((m) => m.watched).length / filteredMovies.length) * 100
-                        : 0
-                    }%`,
+                    width: `${filteredMovies.length > 0
+                      ? (filteredMovies.filter((m) => m.watched).length / filteredMovies.length) * 100
+                      : 0
+                      }%`,
                   }}
                 ></div>
               </div>
@@ -795,7 +775,7 @@ export default function MoviesTracker() {
             <p className="text-purple-600 mb-4">
               {movies.length === 0
                 ? "Comenzá agregando películas de Disney para ver antes del viaje"
-                                  : "Intentá ajustar los filtros para encontrar lo que buscás"}
+                : "Intentá ajustar los filtros para encontrar lo que buscás"}
             </p>
             {movies.length > 0 && (
               <Button variant="outline" onClick={clearFilters}>
