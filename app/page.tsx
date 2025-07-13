@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Wand2, Film, CheckSquare } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getTrip, getMovies, getTasks } from "@/lib/supabase"
@@ -51,14 +52,14 @@ const disneyQuotes = [
 
 // Frases de bienvenida para J&M
 const welcomeMessages = [
-  "¡Bienvenido a tu Aventura Fantástica!",
-  "¡Prepárate para un Viaje Inolvidable!",
-  "¡Tu Sueño Disney Está por Comenzar!",
-  "¡Bienvenido al Mundo de los Sueños!",
-  "¡Tu Aventura Fantástica Te Espera!",
-  "¡Bienvenido a la Tierra de la Fantasía!",
-  "¡Tu Viaje Mágico Está por Empezar!",
-  "¡Bienvenido al Reino de la Imaginación!"
+  "¡Bienvenidos a la Aventura Fantástica!",
+  "¡Prepárense para un Viaje Inolvidable!",
+  "¡El Sueño Disney Está por Comenzar!",
+  "¡Bienvenidos al Mundo de los Sueños!",
+  "¡La Aventura Fantástica les Espera!",
+  "¡Bienvenidos a la Tierra de la Fantasía!",
+  "¡El Viaje Mágico Está por Empezar!",
+  "¡Bienvenidos al Reino de la Imaginación!"
 ]
 
 // Frases de cuenta regresiva para J&M
@@ -86,6 +87,7 @@ const callToActionMessages = [
 ]
 
 export default function HomePage() {
+  const router = useRouter()
   const [tripDate, setTripDate] = useState<Date>(new Date("2024-06-15"))
   const [daysUntilTrip, setDaysUntilTrip] = useState(0)
   const [stats, setStats] = useState({
@@ -231,7 +233,10 @@ export default function HomePage() {
 
       {/* Estadísticas Inspiradoras */}
       <div className="grid grid-cols-2 gap-4">
-        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 border-blue-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 magical-hover">
+        <Card
+          className="relative overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 border-blue-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 magical-hover cursor-pointer"
+          onClick={() => router.push('/movies')}
+        >
           <div className="absolute top-3 right-3 text-2xl animate-spin">🎬</div>
           <CardContent className="p-6 text-center relative z-10">
             <Film className="w-12 h-12 text-blue-600 mx-auto mb-4 animate-pulse" />
@@ -245,14 +250,17 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 border-green-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 magical-hover">
+        <Card
+          className="relative overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 border-green-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 magical-hover cursor-pointer"
+          onClick={() => router.push('/tasks')}
+        >
           <div className="absolute top-3 right-3 text-2xl animate-bounce">📝</div>
           <CardContent className="p-6 text-center relative z-10">
             <CheckSquare className="w-12 h-12 text-green-600 mx-auto mb-4 animate-pulse" />
             <div className="text-4xl font-bold text-green-700 mb-2">
               {stats.totalTasks - stats.completedTasks}
             </div>
-                  <div className="text-sm text-green-600 font-bold">Tareas pendientes</div>
+            <div className="text-sm text-green-600 font-bold">Tareas pendientes</div>
             <div className="flex justify-center gap-2 mt-3">
               <span className="text-sm animate-bounce">⚡</span>
               <span className="text-sm animate-pulse">🎯</span>
