@@ -52,6 +52,7 @@ export default function MoviesTracker() {
   // Filter states
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedFilterTags, setSelectedFilterTags] = useState<string[]>([])
+  const [watchedFilter, setWatchedFilter] = useState<"all" | "watched" | "unwatched">("all")
   const [showPhotos, setShowPhotos] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [allTags, setAllTags] = useState<any[]>([])
@@ -86,7 +87,7 @@ export default function MoviesTracker() {
 
   useEffect(() => {
     filterMovies()
-  }, [movies, searchTerm, selectedFilterTags])
+  }, [movies, searchTerm, selectedFilterTags, watchedFilter])
 
   const loadMovies = async () => {
     try {
@@ -132,12 +133,20 @@ export default function MoviesTracker() {
       filtered = filtered.filter((movie) => movie.tags?.some((tag) => selectedFilterTags.includes(tag.id)))
     }
 
+    // Filter by watched status
+    if (watchedFilter !== "all") {
+      filtered = filtered.filter((movie) =>
+        watchedFilter === "watched" ? movie.watched : !movie.watched
+      )
+    }
+
     setFilteredMovies(filtered)
   }
 
   const clearFilters = () => {
     setSearchTerm("")
     setSelectedFilterTags([])
+    setWatchedFilter("all")
   }
 
   const handleAddMovie = async () => {
@@ -479,9 +488,9 @@ export default function MoviesTracker() {
           >
             <Filter className="w-4 h-4" />
             Filtros
-            {(searchTerm || selectedFilterTags.length > 0) && (
+            {(searchTerm || selectedFilterTags.length > 0 || watchedFilter !== "all") && (
               <Badge variant="secondary" className="ml-1 bg-purple-100 text-purple-700">
-                {(searchTerm ? 1 : 0) + selectedFilterTags.length}
+                {(searchTerm ? 1 : 0) + selectedFilterTags.length + (watchedFilter !== "all" ? 1 : 0)}
               </Badge>
             )}
           </Button>
@@ -500,7 +509,7 @@ export default function MoviesTracker() {
           <CardContent className="p-4 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-medium text-gray-700">Filtros</h3>
-              {(searchTerm || selectedFilterTags.length > 0) && (
+              {(searchTerm || selectedFilterTags.length > 0 || watchedFilter !== "all") && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -568,15 +577,74 @@ export default function MoviesTracker() {
               )}
             </div>
 
+            {/* Watched Status Filter */}
+            <div>
+              <Label className="text-sm font-medium text-gray-700 mb-2 block">Estado de visualización</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={watchedFilter === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setWatchedFilter("all")}
+                  className={watchedFilter === "all"
+                    ? "bg-purple-600 text-white hover:bg-purple-700"
+                    : "border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+                  }
+                >
+                  <Film className="w-4 h-4 mr-1" />
+                  Todas
+                </Button>
+                <Button
+                  variant={watchedFilter === "watched" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setWatchedFilter("watched")}
+                  className={watchedFilter === "watched"
+                    ? "bg-green-600 text-white hover:bg-green-700"
+                    : "border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
+                  }
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  Vistas
+                </Button>
+                <Button
+                  variant={watchedFilter === "unwatched" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setWatchedFilter("unwatched")}
+                  className={watchedFilter === "unwatched"
+                    ? "bg-orange-600 text-white hover:bg-orange-700"
+                    : "border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
+                  }
+                >
+                  <Play className="w-4 h-4 mr-1" />
+                  Por ver
+                </Button>
+              </div>
+            </div>
+
             {/* Active Filters Display */}
-            {searchTerm && (
+            {(searchTerm || watchedFilter !== "all") && (
               <div className="pt-2 border-t">
                 <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-sm text-gray-600">Búsqueda activa:</span>
-                  <Badge variant="secondary" className="flex items-center gap-1 bg-purple-100 text-purple-700">
-                    <Search className="w-3 h-3" />"{searchTerm}"
-                    <X className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => setSearchTerm("")} />
-                  </Badge>
+                  <span className="text-sm text-gray-600">Filtros activos:</span>
+                  {searchTerm && (
+                    <Badge variant="secondary" className="flex items-center gap-1 bg-purple-100 text-purple-700">
+                      <Search className="w-3 h-3" />"{searchTerm}"
+                      <X className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => setSearchTerm("")} />
+                    </Badge>
+                  )}
+                  {watchedFilter !== "all" && (
+                    <Badge variant="secondary" className={`flex items-center gap-1 ${watchedFilter === "watched"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-orange-100 text-orange-700"
+                      }`}>
+                      {watchedFilter === "watched" ? (
+                        <Check className="w-3 h-3" />
+                      ) : (
+                        <Play className="w-3 h-3" />
+                      )}
+                      {watchedFilter === "watched" ? "Vistas" : "Por ver"}
+                      <X className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => setWatchedFilter("all")} />
+                    </Badge>
+                  )}
                 </div>
               </div>
             )}

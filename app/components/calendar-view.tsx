@@ -80,7 +80,7 @@ export default function CalendarView() {
             title: task.title,
             date: task.due_date!,
             type: "task" as const,
-            color: task.completed ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700",
+            color: task.completed ? "bg-green-100 text-green-700" : "bg-purple-100 text-purple-700",
             completed: task.completed,
             description: task.description || undefined,
             priority: task.priority,
@@ -219,16 +219,39 @@ export default function CalendarView() {
         <h2 className="text-2xl font-bold text-purple-700">Calendario del Viaje</h2>
       </div>
 
-      <Card>
-        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-3">
+      {/* No events message */}
+      {events.length === 0 && (
+        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+          <CardContent className="text-center py-12">
+            <Calendar className="w-16 h-16 text-purple-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-purple-700 mb-2">¡No hay actividades programadas!</h3>
+            <p className="text-purple-600">
+              Agregá fechas a tus películas y tareas para verlas en el calendario
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <Card className="shadow-md hover:shadow-lg transition-shadow duration-200">
+        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4">
           <div className="flex items-center justify-between">
-            <Button variant="ghost" size="icon" onClick={previousMonth} className="text-white hover:bg-white/20">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={previousMonth}
+              className="text-white hover:bg-white/20 transition-colors duration-200"
+            >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <CardTitle className="text-center">
+            <CardTitle className="text-center text-xl font-bold">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </CardTitle>
-            <Button variant="ghost" size="icon" onClick={nextMonth} className="text-white hover:bg-white/20">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={nextMonth}
+              className="text-white hover:bg-white/20 transition-colors duration-200"
+            >
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
@@ -237,7 +260,7 @@ export default function CalendarView() {
           {/* Day headers */}
           <div className="grid grid-cols-7 border-b">
             {dayNames.map((day) => (
-              <div key={day} className="p-2 text-center text-sm font-medium text-gray-600 bg-gray-50">
+              <div key={day} className="p-2 text-center text-sm font-medium text-purple-700 bg-purple-50 border-b border-purple-100">
                 {day}
               </div>
             ))}
@@ -258,8 +281,7 @@ export default function CalendarView() {
               return (
                 <div
                   key={index}
-                  className={`min-h-[80px] p-1 border-r border-b cursor-pointer transition-colors ${
-                    day ? "bg-white hover:bg-gray-50" : "bg-gray-50"
+                  className={`min-h-[80px] p-1 border-r border-b cursor-pointer transition-colors duration-200 ${day ? "bg-white hover:bg-purple-50/50" : "bg-gray-50"
                   } ${isToday ? "bg-blue-50" : ""} ${isSelected ? "bg-purple-50 ring-2 ring-purple-300" : ""}`}
                   onClick={() => handleDayClick(day)}
                 >
@@ -270,7 +292,7 @@ export default function CalendarView() {
                       } ${isSelected ? "text-purple-700" : ""}`}>
                         <span>{day}</span>
                         {hasEvents && (
-                          <span className="bg-purple-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center shadow-sm">
                             {dayEvents.length}
                           </span>
                         )}
@@ -279,7 +301,7 @@ export default function CalendarView() {
                         {dayEvents.slice(0, 2).map((event) => (
                           <div
                             key={event.id}
-                            className={`text-xs p-1 rounded ${event.color} flex items-center gap-1 relative`}
+                            className={`text-xs p-1 rounded-md ${event.color} flex items-center gap-1 relative shadow-sm border`}
                           >
                             {getEventIcon(event.type)}
                             <span className="truncate flex-1">{event.title}</span>
@@ -288,7 +310,7 @@ export default function CalendarView() {
                           </div>
                         ))}
                         {dayEvents.length > 2 && (
-                          <div className="text-xs text-gray-500 text-center">
+                          <div className="text-xs text-purple-600 text-center font-medium">
                             +{dayEvents.length - 2} más
                           </div>
                         )}
@@ -305,8 +327,8 @@ export default function CalendarView() {
       {/* Selected Day Events */}
       {selectedDay && selectedDayEvents.length > 0 && (
         <Card className="bg-purple-50 border-purple-200">
-          <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-3">
-            <CardTitle className="text-lg flex items-center gap-2">
+          <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4">
+            <CardTitle className="text-lg flex items-center gap-2 font-bold">
               <Calendar className="w-5 h-5" />
               Actividades del {getSelectedDateString()}
             </CardTitle>
@@ -314,22 +336,22 @@ export default function CalendarView() {
           <CardContent className="p-4">
             <div className="space-y-3">
               {selectedDayEvents.map((event) => (
-                <Card key={event.id} className={`${event.color} border-2`}>
+                <Card key={event.id} className={`${event.color} border-2 shadow-sm hover:shadow-md transition-shadow duration-200`}>
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 mt-1">
                         {getEventIcon(event.type)}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2">
                           <h4 className="font-semibold text-lg">{event.title}</h4>
                           {event.type === "movie" && event.watched && (
-                            <Badge variant="outline" className="bg-green-100 text-green-700">
+                            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
                               ✓ Vista
                             </Badge>
                           )}
                           {event.type === "task" && event.completed && (
-                            <Badge variant="outline" className="bg-green-100 text-green-700">
+                            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
                               ✓ Completada
                             </Badge>
                           )}
@@ -341,12 +363,17 @@ export default function CalendarView() {
                         </div>
                         
                         {event.description && (
-                          <p className="text-sm text-gray-600 mb-2">{event.description}</p>
+                          <p className="text-sm text-gray-600">{event.description}</p>
                         )}
                         
-                        <div className="flex items-center gap-4 text-sm text-gray-500">                          
+                        <div className="flex items-center gap-4 text-sm text-gray-500 pt-1">                          
                           {event.disney_plus_link && (
-                            <Button variant="outline" size="sm" asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
+                              className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 shadow-sm"
+                            >
                               <a href={event.disney_plus_link} target="_blank" rel="noopener noreferrer">
                                 Ver en Disney+
                                 <ExternalLink className="w-3 h-3 ml-1" />
