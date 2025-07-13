@@ -427,7 +427,7 @@ export default function TasksManager() {
             <CheckSquare className="w-8 h-8 text-green-600" />
             <div className="flex-1">
               <div className="flex justify-between text-sm mb-1">
-                <span>Progreso de tareas</span>
+                <span>Progreso de las tareas</span>
                 <span>{Math.round(progressPercentage)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded h-2">

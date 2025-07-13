@@ -1,15 +1,15 @@
 {
-  "name": "Disney Magic Planner",
-  "short_name": "Disney Planner",
-  "description": "Planifica tu aventura mágica a Disney",
-  "start_url": "/",
+  "name": "J&M Disney Planner - Nuestra Aventura Mágica",
+  "short_name": "J&M Disney",
+  "description": "Planificá tu aventura mágica a Disney con tu pareja. Organizá juntos parques, películas, tareas y recuerdos especiales.",
+  "start_url": "https://www.jymdisneyplanner.com.ar/",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#667eea",
   "orientation": "portrait-primary",
   "scope": "/",
-  "lang": "es",
-  "categories": ["travel", "entertainment", "productivity"],
+  "lang": "es-AR",
+  "categories": ["travel", "entertainment", "productivity", "lifestyle"],
   "icons": [
     {
       "src": "/icons/app-icon-192.png",
@@ -28,8 +28,8 @@
     {
       "name": "Parques",
       "short_name": "Parques",
-      "description": "Gestionar parques de Disney",
-      "url": "/?tab=parks",
+      "description": "Explorá y planificá tu visita a los parques de Disney",
+      "url": "/parks",
       "icons": [
         {
           "src": "/shortcuts/shortcut-parks.png",
@@ -40,8 +40,8 @@
     {
       "name": "Películas",
       "short_name": "Películas",
-      "description": "Gestionar películas de Disney",
-      "url": "/?tab=movies",
+      "description": "Descubrí las películas que querés ver juntos",
+      "url": "/movies",
       "icons": [
         {
           "src": "/shortcuts/shortcut-movies.png",
@@ -52,8 +52,8 @@
     {
       "name": "Tareas",
       "short_name": "Tareas",
-      "description": "Gestionar tareas del viaje",
-      "url": "/?tab=tasks",
+      "description": "Organizá todo lo que necesitás para el viaje",
+      "url": "/tasks",
       "icons": [
         {
           "src": "/shortcuts/shortcut-tasks.png",
@@ -64,11 +64,23 @@
     {
       "name": "Notas",
       "short_name": "Notas",
-      "description": "Gestionar notas del viaje",
-      "url": "/?tab=notes",
+      "description": "Guardá tus recuerdos y planes especiales",
+      "url": "/notes",
       "icons": [
         {
           "src": "/shortcuts/shortcut-notes.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Calendario",
+      "short_name": "Calendario",
+      "description": "Organizá tu itinerario día a día",
+      "url": "/calendar",
+      "icons": [
+        {
+          "src": "/shortcuts/shortcut-calendar.png",
           "sizes": "96x96"
         }
       ]

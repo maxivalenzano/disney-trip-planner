@@ -262,7 +262,7 @@ export default function NotesWall() {
                     ? setEditingNote({ ...editingNote, title: e.target.value })
                     : setNewNote({ ...newNote, title: e.target.value })
                 }
-                placeholder="Ej: Ideas para el viaje"
+                placeholder="Ej: Ideas para nuestro viaje"
               />
             </div>
 
@@ -368,8 +368,8 @@ export default function NotesWall() {
         <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
           <CardContent className="text-center py-12">
             <StickyNote className="w-16 h-16 text-purple-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-purple-700 mb-2">¡Tu muro de notas está vacío!</h3>
-            <p className="text-purple-600 mb-4">Comienza a capturar tus ideas y recuerdos para el viaje mágico</p>
+            <h3 className="text-lg font-medium text-purple-700 mb-2">¡Su muro de notas está vacío!</h3>
+            <p className="text-purple-600 mb-4">Comenzá a capturar sus ideas y recuerdos para el viaje mágico</p>
             <Button onClick={openNewDialog} className="bg-gradient-to-r from-purple-500 to-pink-500">
               <Plus className="w-4 h-4 mr-2" />
               Crear tu primera nota

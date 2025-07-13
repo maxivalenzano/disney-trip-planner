@@ -511,7 +511,7 @@ export default function MoviesTracker() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
-                placeholder="Buscar por título o notas..."
+                placeholder="Buscá por título o notas..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -794,8 +794,8 @@ export default function MoviesTracker() {
             </h3>
             <p className="text-purple-600 mb-4">
               {movies.length === 0
-                ? "Comienza agregando películas Disney para ver antes del viaje"
-                : "Intenta ajustar los filtros para encontrar lo que buscas"}
+                ? "Comenzá agregando películas de Disney para ver antes del viaje"
+                                  : "Intentá ajustar los filtros para encontrar lo que buscás"}
             </p>
             {movies.length > 0 && (
               <Button variant="outline" onClick={clearFilters}>
@@ -892,7 +892,7 @@ export default function MoviesTracker() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="group-hover:opacity-100 transition-opacity"
                       >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>

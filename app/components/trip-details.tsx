@@ -260,7 +260,7 @@ export default function TripDetails() {
               id="notes"
               value={tripData.notes}
               onChange={(e) => setTripData({ ...tripData, notes: e.target.value })}
-              placeholder="Añade cualquier información importante sobre tu viaje..."
+                              placeholder="Agregá cualquier información importante sobre su viaje..."
               rows={4}
             />
           ) : (

@@ -3,14 +3,27 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import SharedLayout from "./components/shared-layout"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Disney Planner - Tu Aventura Mágica",
-  description: "Planifica tu viaje mágico a Disney con nuestra aplicación especializada. Organiza parques, películas, tareas y más en un lugar mágico.",
-  keywords: "Disney, planificador, viaje, parques, películas, magia, aventura",
-  authors: [{ name: "Disney Planner" }],
+  title: "J&M Disney Planner - Nuestra Aventura Mágica",
+  description: "Planificá tu aventura mágica a Disney con tu pareja. Organizá juntos parques, películas, tareas y recuerdos especiales en un solo lugar encantado. Donde los sueños se hacen realidad para dos.",
+  keywords: "Disney, planificador, viaje, parques, películas, magia, aventura, J&M, pareja, argentina",
+  authors: [{ name: "Team J&M" }],
+  metadataBase: new URL('https://www.jymdisneyplanner.com.ar'),
+  alternates: {
+    canonical: 'https://www.jymdisneyplanner.com.ar'
+  },
+  openGraph: {
+    title: "J&M Disney Planner - Nuestra Aventura Mágica",
+    description: "Planificá tu aventura mágica a Disney con tu pareja. Organizá juntos parques, películas, tareas y recuerdos especiales.",
+    url: 'https://www.jymdisneyplanner.com.ar',
+    siteName: 'J&M Disney Planner',
+    locale: 'es_AR',
+    type: 'website',
+  },
   viewport: {
     width: 'device-width',
     initialScale: 1,
@@ -25,14 +38,14 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Disney Planner'
+    title: 'J&M Disney Planner'
   },
   formatDetection: {
     telephone: false,
     email: false,
     address: false
   },
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -41,7 +54,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es-AR" suppressHydrationWarning>
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -60,7 +73,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <SharedLayout>
+            {children}
+          </SharedLayout>
         </ThemeProvider>
       </body>
     </html>
