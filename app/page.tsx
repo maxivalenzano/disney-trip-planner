@@ -45,6 +45,14 @@ const disneyQuotes = [
   {
     quote: "Cada estrella es un sueño esperando a ser descubierto",
     author: "Walt Disney"
+  },
+  {
+    quote: "Siempre deja que tu conciencia sea tu guía",
+    author: "Pepe Grillo"
+  },
+  {
+    quote: "La magia está en el corazón",
+    author: "Walt Disney"
   }
 ]
 
