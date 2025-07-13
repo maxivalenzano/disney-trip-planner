@@ -9,81 +9,134 @@ import { getTrip, getMovies, getTasks } from "@/lib/supabase"
 // Frases inspiradoras de Disney
 const disneyQuotes = [
   {
-    quote: "Todos nuestros sueños pueden hacerse realidad si tenemos el coraje de perseguirlos",
+    quote: "Todos nuestros sueños pueden hacerse realidad, si tenemos el coraje de perseguirlos.",
     author: "Walt Disney"
   },
   {
-    quote: "La vida es una aventura atrevida o no es nada",
+    quote: "La vida es una aventura atrevida o no es nada.",
     author: "Helen Keller"
   },
   {
-    quote: "La imaginación es más importante que el conocimiento",
+    quote: "La imaginación es más importante que el conocimiento.",
     author: "Albert Einstein"
   },
   {
-    quote: "Cada día es una nueva oportunidad para ser mejor",
-    author: "Mickey Mouse"
-  },
-  {
-    quote: "La felicidad es un estado mental, no un destino",
+    quote: "La manera de empezar es dejar de hablar y comenzar a hacer.",
     author: "Walt Disney"
   },
   {
-    quote: "Los límites solo existen en tu mente",
-    author: "Peter Pan"
-  },
-  {
-    quote: "La verdadera magia está en creer en ti mismo",
-    author: "Cenicienta"
-  },
-  {
-    quote: "Cada estrella es un sueño esperando a ser descubierto",
+    quote: "Es divertido hacer lo imposible.",
     author: "Walt Disney"
   },
   {
-    quote: "Siempre deja que tu conciencia sea tu guía",
+    quote: "Si puedes soñarlo, puedes lograrlo.",
+    author: "Walt Disney"
+  },
+  {
+    quote: "La risa es intemporal, la imaginación no tiene edad y los sueños son para siempre.",
+    author: "Walt Disney"
+  },
+  {
+    quote: "Cuanto más te gustes a ti mismo, menos serás como los demás, y eso es lo que te hace único.",
+    author: "Walt Disney"
+  },
+  {
+    quote: "Deja siempre que tu conciencia sea tu guía.",
     author: "Pepe Grillo"
   },
   {
-    quote: "La magia está en el corazón",
-    author: "Walt Disney"
+    quote: "Segunda estrella a la derecha, y todo recto hasta el amanecer.",
+    author: "Peter Pan"
+  },
+  {
+    quote: "Incluso los milagros toman un poco de tiempo.",
+    author: "Hada Madrina"
+  },
+  {
+    quote: "La magia está en creer en ti mismo.",
+    author: "Cenicienta"
+  },
+  {
+    quote: "El pasado puede doler, pero, como yo lo veo, puedes huir de él o aprender.",
+    author: "Rafiki (El Rey León)"
+  },
+  {
+    quote: "Ohana significa familia. Y tu familia nunca te abandona… ni te olvida.",
+    author: "Lilo (Lilo & Stitch)"
+  },
+  {
+    quote: "La flor que florece en la adversidad es la más hermosa de todas.",
+    author: "El Emperador (Mulán)"
+  },
+  {
+    quote: "La única forma de lograr lo que quieres en este mundo… es trabajando duro.",
+    author: "Tiana (La Princesa y el Sapo)"
+  },
+  {
+    quote: "Las cosas que te hacen diferente son las que te hacen ser tú.",
+    author: "Piglet (Winnie Pooh)"
+  },
+  {
+    quote: "A veces el camino correcto no es el más fácil.",
+    author: "Pocahontas"
+  },
+  {
+    quote: "No dejes que nadie decida tu destino por ti.",
+    author: "Bella (La Bella y la Bestia)"
+  },
+  {
+    quote: "Las aventuras les esperan a quienes se atreven a vivirlas.",
+    author: "Mérida (Valiente)"
+  },
+  {
+    quote: "Nunca es tarde para ser quien debiste ser.",
+    author: "Alicia (Alicia en el País de las Maravillas)"
+  },
+  {
+    quote: "Si sigues mirando atrás, nunca sabrás lo que hay delante.",
+    author: "Remy (Ratatouille)"
+  },
+  {
+    quote: "El cambio es bueno, pequeña… el cambio es bueno.",
+    author: "Mufasa (El Rey León)"
   }
-]
+];
+
 
 // Frases de bienvenida para J&M
 const welcomeMessages = [
-  "¡Bienvenidos a la Aventura Fantástica!",
-  "¡Prepárense para un Viaje Inolvidable!",
-  "¡El Sueño Disney Está por Comenzar!",
-  "¡Bienvenidos al Mundo de los Sueños!",
-  "¡La Aventura Fantástica les Espera!",
-  "¡Bienvenidos a la Tierra de la Fantasía!",
-  "¡El Viaje Mágico Está por Empezar!",
-  "¡Bienvenidos al Reino de la Imaginación!"
-]
+  "¡Bienvenidos a su aventura fantástica!",
+  "¡Prepárense para un viaje inolvidable!",
+  "¡El sueño Disney está a punto de comenzar!",
+  "¡Bienvenidos al mundo donde los sueños se hacen realidad!",
+  "¡La magia los espera!",
+  "¡Bienvenidos a la tierra de la fantasía!",
+  "¡Su viaje mágico está por empezar!",
+  "¡Bienvenidos al reino de la imaginación!"
+];
 
 // Frases de cuenta regresiva para J&M
 const countdownMessages = [
-  "días para vivir la aventura juntos",
-  "días para que se cumplan los sueños",
+  "días para vivir juntos la aventura",
+  "días para que los sueños se hagan realidad",
   "días para sumergirse en la fantasía",
-  "días para divertirse como nunca",
+  "días para divertirse como nunca antes",
   "días para emocionarse juntos",
-  "días para la alegría compartida",
-  "días para sorprenderse",
+  "días para compartir la alegría",
+  "días para dejarse sorprender",
   "días para maravillarse como pareja"
-]
+];
 
 // Frases de llamada a la acción para J&M
 const callToActionMessages = [
-  "¡Prepárense para la Fantasía!",
-  "¡Comiencen Su Aventura Romántica!",
-  "¡Descubran la Magia Juntos!",
-  "¡Vivan Su Sueño en Pareja!",
-  "¡Exploren la Fantasía de a Dos!",
-  "¡Creen Recuerdos Inolvidables Juntos!",
-  "¡Sumérjanse en la Aventura!",
-  "¡Hagan Realidad Sus Sueños Compartidos!"
+  "¡Que comience la magia!",
+  "¡Descubran juntos el mundo de los sueños!",
+  "¡Déjense llevar por la fantasía!",
+  "¡Vivan su propio cuento de hadas!",
+  "¡Construyan recuerdos mágicos, juntos!",
+  "¡Exploren cada rincón de la felicidad!",
+  "¡Sean protagonistas de su propia aventura!",
+  "¡Hagan que cada momento cuente!"
 ]
 
 export default function HomePage() {
@@ -168,7 +221,7 @@ export default function HomePage() {
           <div className="absolute bottom-6 left-12 text-2xl animate-float delay-500">🎡</div>
           <div className="absolute bottom-12 right-6 text-3xl animate-float delay-1500">🎢</div>
         </div>
-        
+
         <div className="relative z-10 text-center">
           <div className="flex justify-center gap-3 mb-6 text-5xl">
             <span className="animate-pulse">✨</span>
@@ -178,7 +231,7 @@ export default function HomePage() {
           <h1 className="text-4xl font-bold mb-3 magical-text-glow">
             {welcomeMessage}
           </h1>
-                <p className="text-xl opacity-95 font-medium mb-6">Donde la fantasía se encuentra con la realidad</p>
+          <p className="text-xl opacity-95 font-medium mb-6">Donde la fantasía se encuentra con la realidad</p>
           <div className="flex justify-center gap-2 text-3xl">
             <span className="animate-spin">🌟</span>
             <span className="animate-pulse">💫</span>
@@ -195,7 +248,7 @@ export default function HomePage() {
         <CardHeader className="text-center relative z-10 pb-4">
           <CardTitle className="flex items-center justify-center gap-3 text-2xl text-orange-700 font-bold">
             <Wand2 className="w-6 h-6 text-purple-500 animate-pulse" />
-                  Cuenta Regresiva
+            Cuenta Regresiva
             <Wand2 className="w-6 h-6 text-purple-500 animate-pulse" />
           </CardTitle>
         </CardHeader>
@@ -227,7 +280,7 @@ export default function HomePage() {
             <span className="animate-bounce delay-800">🎪</span>
           </div>
 
-                <p className="text-orange-600 font-bold text-xl">¡La aventura más fantástica está por comenzar!</p>
+          <p className="text-orange-600 font-bold text-xl">¡La aventura más fantástica está por comenzar!</p>
         </CardContent>
       </Card>
 
