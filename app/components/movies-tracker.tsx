@@ -472,16 +472,23 @@ export default function MoviesTracker() {
           <h2 className="text-2xl font-bold text-purple-700">Películas y Documentales</h2>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowFilters(!showFilters)} 
+            className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+          >
             <Filter className="w-4 h-4" />
             Filtros
             {(searchTerm || selectedFilterTags.length > 0) && (
-              <Badge variant="secondary" className="ml-1">
+              <Badge variant="secondary" className="ml-1 bg-purple-100 text-purple-700">
                 {(searchTerm ? 1 : 0) + selectedFilterTags.length}
               </Badge>
             )}
           </Button>
-          <Button onClick={openNewDialog} className="bg-gradient-to-r from-red-500 to-pink-500">
+          <Button 
+            onClick={openNewDialog} 
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
+          >
             <Plus className="w-4 h-4" />
           </Button>
         </div>
@@ -494,7 +501,12 @@ export default function MoviesTracker() {
             <div className="flex items-center justify-between">
               <h3 className="font-medium text-gray-700">Filtros</h3>
               {(searchTerm || selectedFilterTags.length > 0) && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-gray-500">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearFilters} 
+                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                >
                   <X className="w-4 h-4 mr-1" />
                   Limpiar
                 </Button>
@@ -520,7 +532,7 @@ export default function MoviesTracker() {
                   variant="outline"
                   size="sm"
                   onClick={() => setOpenFilterTagSelector(true)}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
                 >
                   <TagIcon className="w-4 h-4" />
                   {selectedFilterTags.length > 0
@@ -532,7 +544,7 @@ export default function MoviesTracker() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setSelectedFilterTags([])}
-                    className="text-gray-500 hover:text-red-500"
+                    className="text-purple-600 hover:text-red-500 hover:bg-red-50"
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -542,7 +554,11 @@ export default function MoviesTracker() {
               {selectedFilterTags.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
                   {getFilteredTagsForDisplay().map((tag) => (
-                    <Badge key={tag.id} variant="secondary" className="text-xs flex items-center gap-1 px-2 py-1">
+                    <Badge 
+                      key={tag.id} 
+                      variant="secondary" 
+                      className="text-xs flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 border-purple-200"
+                    >
                       <span className="text-sm">{tag.icon}</span>
                       <span>{tag.name}</span>
                       {tag.parent_name && <span className="text-gray-500">({tag.parent_name})</span>}
@@ -557,9 +573,9 @@ export default function MoviesTracker() {
               <div className="pt-2 border-t">
                 <div className="flex flex-wrap gap-2 items-center">
                   <span className="text-sm text-gray-600">Búsqueda activa:</span>
-                  <Badge variant="secondary" className="flex items-center gap-1">
+                  <Badge variant="secondary" className="flex items-center gap-1 bg-purple-100 text-purple-700">
                     <Search className="w-3 h-3" />"{searchTerm}"
-                    <X className="w-3 h-3 cursor-pointer" onClick={() => setSearchTerm("")} />
+                    <X className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => setSearchTerm("")} />
                   </Badge>
                 </div>
               </div>
@@ -665,7 +681,7 @@ export default function MoviesTracker() {
                   variant="outline"
                   size="sm"
                   onClick={() => setOpenTagSelector(true)}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
                 >
                   <TagIcon className="w-4 h-4" />
                   {selectedTags.length > 0 ? `${selectedTags.length} seleccionadas` : "Seleccionar etiquetas"}
@@ -682,7 +698,11 @@ export default function MoviesTracker() {
               )}
             </div>
 
-            <Button onClick={editingMovie ? handleEditMovie : handleAddMovie} disabled={creating} className="w-full">
+            <Button 
+              onClick={editingMovie ? handleEditMovie : handleAddMovie} 
+              disabled={creating} 
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
+            >
               {creating ? "Guardando..." : editingMovie ? "Actualizar Película" : "Agregar Película"}
             </Button>
           </div>
@@ -791,7 +811,11 @@ export default function MoviesTracker() {
                 : "Intentá ajustar los filtros para encontrar lo que buscás"}
             </p>
             {movies.length > 0 && (
-              <Button variant="outline" onClick={clearFilters}>
+              <Button 
+                variant="outline" 
+                onClick={clearFilters}
+                className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+              >
                 Limpiar filtros
               </Button>
             )}
@@ -800,26 +824,36 @@ export default function MoviesTracker() {
       ) : (
         <div className="space-y-3">
           {filteredMovies.map((movie) => (
-            <Card key={movie.id} className={`${movie.watched ? "bg-green-50 border-green-200" : "bg-white"} group`}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <Checkbox checked={movie.watched} onCheckedChange={() => toggleWatched(movie)} className="mt-1" />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className={`font-semibold ${movie.watched ? "line-through text-gray-600" : ""}`}>
-                        {movie.title}
-                      </h3>
-                      {movie.year && <Badge variant="outline">{movie.year}</Badge>}
-                      {movie.watched && <Check className="w-4 h-4 text-green-600" />}
-                    </div>
+            <Card 
+              key={movie.id} 
+              className={`${movie.watched ? "bg-green-50 border-green-200" : "bg-white hover:bg-purple-50/50 hover:border-purple-200"} group border border-gray-200 transition-colors duration-200`}
+            >
+                              <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Checkbox checked={movie.watched} onCheckedChange={() => toggleWatched(movie)} className="mt-1" />
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <h3 className={`font-semibold ${movie.watched ? "line-through text-gray-600" : "text-gray-800"}`}>
+                          {movie.title}
+                        </h3>
+                        {movie.year && (
+                          <Badge 
+                            variant="outline" 
+                            className="border-gray-300 text-gray-600 bg-gray-50"
+                          >
+                            {movie.year}
+                          </Badge>
+                        )}
+                        {movie.watched && <Check className="w-4 h-4 text-green-600" />}
+                      </div>
 
-                    {movie.notes && <p className="text-sm text-gray-600 mb-2">{movie.notes}</p>}
+                      {movie.notes && <p className="text-sm text-gray-600">{movie.notes}</p>}
 
                     {/* Watch Date */}
                     {movie.watch_date && (
-                      <div className="flex items-center gap-1 mb-2">
-                        <Calendar className="w-4 h-4 text-blue-500" />
-                        <span className="text-sm text-blue-600 font-medium">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4 text-purple-500" />
+                        <span className="text-sm text-purple-600 font-medium">
                           {new Date(movie.watch_date).toLocaleDateString("es-ES", {
                             weekday: "long",
                             year: "numeric",
@@ -832,9 +866,13 @@ export default function MoviesTracker() {
 
                     {/* Tags Display */}
                     {movie.tags && movie.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-2">
+                      <div className="flex flex-wrap gap-1">
                         {movie.tags.map((tag) => (
-                          <Badge key={tag.id} variant="outline" className="text-xs flex items-center gap-1 px-2 py-1">
+                          <Badge 
+                            key={tag.id} 
+                            variant="outline" 
+                            className="text-xs flex items-center gap-1 px-2 py-1 border-purple-200 text-purple-700 bg-purple-50"
+                          >
                             <span className="text-sm">{tag.icon}</span>
                             <span>{tag.name}</span>
                             {tag.parent_name && <span className="text-gray-500">({tag.parent_name})</span>}
@@ -845,7 +883,7 @@ export default function MoviesTracker() {
 
                     {/* Photo Display cuando showPhotos es true */}
                     {movie.photos && movie.photos.length > 0 && showPhotos && (
-                      <div className="mb-3">
+                      <div>
                         <PhotoGallery
                           photos={movie.photos}
                           onPhotosChange={loadMovies}
@@ -854,24 +892,29 @@ export default function MoviesTracker() {
                       </div>
                     )}
 
-                    <div className="flex gap-2">
+                                        <div className="flex gap-2 pt-1">
                       {/* Botón de fotos cuando showPhotos es false */}
                       {movie.photos && movie.photos.length > 0 && !showPhotos && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => openPhotoViewer(movie)}
-                          className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
+                          className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 hover:border-purple-300 shadow-sm"
                         >
-                          <Images className="w-4 h-4 text-blue-600" />
-                          <span className="text-blue-700">
+                          <Images className="w-4 h-4" />
+                          <span>
                             {movie.photos.length} {movie.photos.length === 1 ? "foto" : "fotos"}
                           </span>
                         </Button>
                       )}
-
+                      
                       {movie.disney_plus_link && (
-                        <Button size="sm" variant="outline" asChild>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          asChild
+                          className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 shadow-sm"
+                        >
                           <a href={movie.disney_plus_link} target="_blank" rel="noopener noreferrer">
                             <Play className="w-3 h-3 mr-1" />
                             Disney+
@@ -886,7 +929,7 @@ export default function MoviesTracker() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="group-hover:opacity-100 transition-opacity"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-purple-600 hover:text-purple-700 hover:bg-purple-50"
                       >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
