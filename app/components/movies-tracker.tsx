@@ -843,32 +843,33 @@ export default function MoviesTracker() {
                       </div>
                     )}
 
-                    {/* Photo Display */}
-                    {movie.photos && movie.photos.length > 0 && (
+                    {/* Photo Display cuando showPhotos es true */}
+                    {movie.photos && movie.photos.length > 0 && showPhotos && (
                       <div className="mb-3">
-                        {showPhotos ? (
-                          <PhotoGallery
-                            photos={movie.photos}
-                            onPhotosChange={loadMovies}
-                            onAddPhoto={() => openPhotoUpload(movie.id)}
-                          />
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openPhotoViewer(movie)}
-                            className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
-                          >
-                            <Images className="w-4 h-4 text-blue-600" />
-                            <span className="text-blue-700">
-                              {movie.photos.length} {movie.photos.length === 1 ? "foto" : "fotos"}
-                            </span>
-                          </Button>
-                        )}
+                        <PhotoGallery
+                          photos={movie.photos}
+                          onPhotosChange={loadMovies}
+                          onAddPhoto={() => openPhotoUpload(movie.id)}
+                        />
                       </div>
                     )}
 
                     <div className="flex gap-2">
+                      {/* Botón de fotos cuando showPhotos es false */}
+                      {movie.photos && movie.photos.length > 0 && !showPhotos && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openPhotoViewer(movie)}
+                          className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
+                        >
+                          <Images className="w-4 h-4 text-blue-600" />
+                          <span className="text-blue-700">
+                            {movie.photos.length} {movie.photos.length === 1 ? "foto" : "fotos"}
+                          </span>
+                        </Button>
+                      )}
+
                       {movie.disney_plus_link && (
                         <Button size="sm" variant="outline" asChild>
                           <a href={movie.disney_plus_link} target="_blank" rel="noopener noreferrer">
