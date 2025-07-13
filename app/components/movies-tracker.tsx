@@ -55,6 +55,7 @@ export default function MoviesTracker() {
   const [showPhotos, setShowPhotos] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [allTags, setAllTags] = useState<any[]>([])
+  const [openFilterTagSelector, setOpenFilterTagSelector] = useState(false)
 
   // Photo viewer state
   const [selectedMoviePhotos, setSelectedMoviePhotos] = useState<{
@@ -514,49 +515,52 @@ export default function MoviesTracker() {
             {/* Tag Filter */}
             <div>
               <Label className="text-sm font-medium text-gray-700 mb-2 block">Filtrar por etiquetas</Label>
-              <div className="flex flex-wrap gap-2">
-                {allTags.slice(0, 10).map((tag) => (
-                  <Badge
-                    key={tag.id}
-                    variant={selectedFilterTags.includes(tag.id) ? "default" : "outline"}
-                    className="cursor-pointer flex items-center gap-1"
-                    onClick={() => {
-                      if (selectedFilterTags.includes(tag.id)) {
-                        setSelectedFilterTags(selectedFilterTags.filter((id) => id !== tag.id))
-                      } else {
-                        setSelectedFilterTags([...selectedFilterTags, tag.id])
-                      }
-                    }}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOpenFilterTagSelector(true)}
+                  className="flex items-center gap-2"
+                >
+                  <TagIcon className="w-4 h-4" />
+                  {selectedFilterTags.length > 0
+                    ? `${selectedFilterTags.length} etiquetas seleccionadas`
+                    : "Seleccionar etiquetas"}
+                </Button>
+                {selectedFilterTags.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedFilterTags([])}
+                    className="text-gray-500 hover:text-red-500"
                   >
-                    <span className="text-xs">{tag.icon}</span>
-                    <span>{tag.name}</span>
-                    {tag.parent_name && <span className="text-gray-500 text-xs">({tag.parent_name})</span>}
-                  </Badge>
-                ))}
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
+              {/* Preview de etiquetas seleccionadas */}
+              {selectedFilterTags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {getFilteredTagsForDisplay().map((tag) => (
+                    <Badge key={tag.id} variant="secondary" className="text-xs flex items-center gap-1 px-2 py-1">
+                      <span className="text-sm">{tag.icon}</span>
+                      <span>{tag.name}</span>
+                      {tag.parent_name && <span className="text-gray-500">({tag.parent_name})</span>}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Active Filters Display */}
-            {(searchTerm || selectedFilterTags.length > 0) && (
+            {searchTerm && (
               <div className="pt-2 border-t">
                 <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-sm text-gray-600">Filtros activos:</span>
-                  {searchTerm && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      <Search className="w-3 h-3" />"{searchTerm}"
-                      <X className="w-3 h-3 cursor-pointer" onClick={() => setSearchTerm("")} />
-                    </Badge>
-                  )}
-                  {getFilteredTagsForDisplay().map((tag) => (
-                    <Badge key={tag.id} variant="secondary" className="flex items-center gap-1">
-                      <span className="text-xs">{tag.icon}</span>
-                      {tag.name}
-                      <X
-                        className="w-3 h-3 cursor-pointer"
-                        onClick={() => setSelectedFilterTags(selectedFilterTags.filter((id) => id !== tag.id))}
-                      />
-                    </Badge>
-                  ))}
+                  <span className="text-sm text-gray-600">Búsqueda activa:</span>
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Search className="w-3 h-3" />"{searchTerm}"
+                    <X className="w-3 h-3 cursor-pointer" onClick={() => setSearchTerm("")} />
+                  </Badge>
                 </div>
               </div>
             )}
@@ -711,6 +715,15 @@ export default function MoviesTracker() {
             setCurrentMovieId(null)
           }
         }}
+      />
+
+      {/* Tag Selector for Filters */}
+      <TagSelector
+        selectedTags={selectedFilterTags}
+        onTagsChange={setSelectedFilterTags}
+        open={openFilterTagSelector}
+        onOpenChange={setOpenFilterTagSelector}
+        title="Filtrar por Etiquetas"
       />
 
       {/* Photo Viewer Dialog */}

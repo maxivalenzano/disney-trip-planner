@@ -14,9 +14,10 @@ interface TagSelectorProps {
   onTagsChange: (tagIds: string[]) => void
   open: boolean
   onOpenChange: (open: boolean) => void
+  title?: string
 }
 
-export default function TagSelector({ selectedTags, onTagsChange, open, onOpenChange }: TagSelectorProps) {
+export default function TagSelector({ selectedTags, onTagsChange, open, onOpenChange, title = "Seleccionar Etiquetas" }: TagSelectorProps) {
   const [tagsGrouped, setTagsGrouped] = useState<{ [key: string]: TagType[] }>({})
   const [expandedParks, setExpandedParks] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
@@ -78,7 +79,7 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Tag className="w-5 h-5" />
-            Seleccionar Etiquetas
+            {title}
           </DialogTitle>
         </DialogHeader>
 
