@@ -232,7 +232,7 @@ export default function FilterBar({
                     onClick={() => onStatusFilterChange(key)}
                     className={buttonClass}
                   >
-                    <Icon className="w-4 h-4 mr-1" />
+                        {/* <Icon className="w-4 h-4 mr-1" /> */}
                     {config.label}
                   </Button>
                 )
@@ -264,7 +264,7 @@ export default function FilterBar({
                   : "border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
                 }
               >
-                <Calendar className="w-4 h-4 mr-1" />
+                            {/* <Calendar className="w-4 h-4 mr-1" /> */}
                 {sortConfig.ascLabel}
               </Button>
               <Button
@@ -276,7 +276,7 @@ export default function FilterBar({
                   : "border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300"
                 }
               >
-                <Calendar className="w-4 h-4 mr-1" />
+                            {/* <Calendar className="w-4 h-4 mr-1" /> */}
                 {sortConfig.descLabel}
               </Button>
             </div>
