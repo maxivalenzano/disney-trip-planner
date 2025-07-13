@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Star, Plus, MapPin, Clock, Heart, Zap, Users, Edit, Trash2, MoreHorizontal } from "lucide-react"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Star, Plus, MapPin, Clock, Heart, Zap, Users, Edit, Trash2, MoreHorizontal, ChevronDown, ChevronUp } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   getParks,
@@ -27,6 +28,7 @@ export default function ParksManager() {
   const [parks, setParks] = useState<Park[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [expandedParks, setExpandedParks] = useState<Set<string>>(new Set())
   const { toast } = useToast()
 
   const [newPark, setNewPark] = useState({
@@ -322,6 +324,18 @@ export default function ParksManager() {
     }
   }
 
+  const toggleParkExpansion = (parkId: string) => {
+    setExpandedParks(prev => {
+      const newExpanded = new Set(prev)
+      if (newExpanded.has(parkId)) {
+        newExpanded.delete(parkId)
+      } else {
+        newExpanded.add(parkId)
+      }
+      return newExpanded
+    })
+  }
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -494,90 +508,101 @@ export default function ParksManager() {
         </Card>
       ) : (
         parks.map((park) => (
-          <Card key={park.id} className="overflow-hidden">
-            <CardHeader className={`bg-gradient-to-r ${park.color} text-white`}>
-              <CardTitle className="flex items-center gap-2">
-                <span className="text-2xl">{park.icon}</span>
-                {park.name}
-                <Badge variant="secondary" className="ml-auto mr-2">
-                  {park.attractions?.length || 0} atracciones
-                </Badge>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => openEditParkDialog(park)}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Editar parque
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDeletePark(park)} className="text-red-600">
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Eliminar parque
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="space-y-3">
-                {park.attractions?.map((attraction) => (
-                  <div key={attraction.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg group">
-                    <div className="flex items-center gap-2">
-                      {getTypeIcon(attraction.type)}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium">{attraction.name}</h4>
-                      {attraction.notes && <p className="text-sm text-gray-600">{attraction.notes}</p>}
-                    </div>
-                    <Badge
-                      variant={
-                        attraction.priority === "high"
-                          ? "destructive"
-                          : attraction.priority === "medium"
-                            ? "default"
-                            : "secondary"
-                      }
-                    >
-                      {attraction.priority === "high" ? "Alta" : attraction.priority === "medium" ? "Media" : "Baja"}
-                    </Badge>
+          <Collapsible key={park.id} open={expandedParks.has(park.id)} onOpenChange={() => toggleParkExpansion(park.id)}>
+            <Card className="overflow-hidden">
+              <CollapsibleTrigger asChild>
+                <CardHeader className={`bg-gradient-to-r ${park.color} text-white cursor-pointer hover:brightness-110 transition-all`}>
+                  <CardTitle className="flex items-center gap-2">
+                    <span className="text-2xl">{park.icon}</span>
+                    <span className="flex-1">{park.name}</span>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-white hover:bg-white/20"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <MoreHorizontal className="w-4 h-4" />
+                          <Badge variant="secondary" className="mr-1">
+                            {park.attractions?.length || 0} atrac
+                          </Badge>
+                          {/* <MoreHorizontal className="w-4 h-4" /> */}
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => openEditAttractionDialog(attraction)}>
+                        <DropdownMenuItem onClick={() => openEditParkDialog(park)}>
                           <Edit className="w-4 h-4 mr-2" />
-                          Editar
+                          Editar parque
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDeleteAttraction(attraction)} className="text-red-600">
+                        <DropdownMenuItem onClick={() => handleDeletePark(park)} className="text-red-600">
                           <Trash2 className="w-4 h-4 mr-2" />
-                          Eliminar
+                          Eliminar parque
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </div>
-                ))}
+                  </CardTitle>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    {park.attractions?.map((attraction) => (
+                      <div key={attraction.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg group">
+                        <div className="flex items-center gap-2">
+                          {getTypeIcon(attraction.type)}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium">{attraction.name}</h4>
+                          {attraction.notes && <p className="text-sm text-gray-600">{attraction.notes}</p>}
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="group-hover:opacity-100 transition-opacity"
+                            >
+                              <Badge
+                                variant={
+                                  attraction.priority === "high"
+                                    ? "destructive"
+                                    : attraction.priority === "medium"
+                                      ? "default"
+                                      : "secondary"
+                                }
+                              >
+                                {attraction.priority === "high" ? "Alta" : attraction.priority === "medium" ? "Media" : "Baja"}
+                              </Badge>
+                              {/* <MoreHorizontal className="w-4 h-4" /> */}
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => openEditAttractionDialog(attraction)}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteAttraction(attraction)} className="text-red-600">
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    ))}
 
-                <Button
-                  variant="outline"
-                  className="w-full mt-2 bg-transparent"
-                  onClick={() => openNewAttractionDialog(park.id)}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Agregar Atracción
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                    <Button
+                      variant="outline"
+                      className="w-full mt-2 bg-transparent"
+                      onClick={() => openNewAttractionDialog(park.id)}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Agregar Atracción
+                    </Button>
+                  </div>
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
         ))
       )}
     </div>
