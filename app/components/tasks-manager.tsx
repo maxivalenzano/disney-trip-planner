@@ -286,7 +286,10 @@ export default function TasksManager() {
         <div>
           <h2 className="text-2xl font-bold text-purple-700">Tareas del Viaje</h2>
         </div>
-        <Button onClick={openNewDialog} className="bg-gradient-to-r from-green-500 to-blue-500">
+        <Button
+          onClick={openNewDialog}
+          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Nueva Tarea
         </Button>
@@ -348,7 +351,7 @@ export default function TasksManager() {
                     ? setEditingTask({ ...editingTask, priority: e.target.value as any })
                     : setNewTask({ ...newTask, priority: e.target.value as any })
                 }
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border border-input rounded-md bg-background text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <option value="high">Alta</option>
                 <option value="medium">Media</option>
@@ -365,7 +368,7 @@ export default function TasksManager() {
                   variant="outline"
                   size="sm"
                   onClick={() => setOpenTagSelector(true)}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
                 >
                   <Tag className="w-4 h-4" />
                   {selectedTags.length > 0 ? `${selectedTags.length} seleccionadas` : "Seleccionar etiquetas"}
@@ -374,7 +377,7 @@ export default function TasksManager() {
               {selectedTags.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
                   {selectedTags.map((tagId) => (
-                    <Badge key={tagId} variant="secondary" className="text-xs">
+                    <Badge key={tagId} variant="secondary" className="text-xs bg-purple-100 text-purple-700">
                       Etiqueta seleccionada
                     </Badge>
                   ))}
@@ -382,7 +385,11 @@ export default function TasksManager() {
               )}
             </div>
 
-            <Button onClick={editingTask ? handleEditTask : handleAddTask} disabled={creating} className="w-full">
+            <Button
+              onClick={editingTask ? handleEditTask : handleAddTask}
+              disabled={creating}
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
+            >
               {creating ? "Guardando..." : editingTask ? "Actualizar Tarea" : "Agregar Tarea"}
             </Button>
           </div>
@@ -418,21 +425,24 @@ export default function TasksManager() {
       />
 
       {/* Progress Bar */}
-      <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+      <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            <CheckSquare className="w-8 h-8 text-green-600" />
+            <CheckSquare className="w-8 h-8 text-purple-600" />
             <div className="flex-1">
               <div className="flex justify-between text-sm mb-1">
-                <span className="font-medium text-green-700">
+                <span className="font-medium text-purple-700">
                   {completedCount} de {totalCount} tareas completadas
                 </span>
-                <span className="font-bold text-green-600">
+                <span className="font-bold text-purple-600">
                   {Math.round(progressPercentage)}%
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded h-2">
-                <div className="bg-green-500 h-2 rounded" style={{ width: `${progressPercentage}%` }}></div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
               </div>
             </div>
           </div>
@@ -440,23 +450,45 @@ export default function TasksManager() {
       </Card>
 
       {/* Task List */}
-      <div className="space-y-4">
-        {tasks.map((task) => (
-          <Card key={task.id} className={`border ${getPriorityColor(task.priority)}`}>
-            <CardContent className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Checkbox checked={task.completed} onCheckedChange={() => toggleCompleted(task)} />
-                <div className="flex-1">
-                  <h3 className={`text-lg font-semibold ${task.completed ? "line-through text-gray-600" : ""}`}>
+      {tasks.length === 0 ? (
+        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+          <CardContent className="text-center py-12">
+            <CheckSquare className="w-16 h-16 text-purple-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-purple-700 mb-2">¡No hay tareas aún!</h3>
+            <p className="text-purple-600 mb-4">Comenzá agregando tareas para organizar tu viaje a Disney</p>
+            <Button
+              onClick={openNewDialog}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
+            >
+              Crear primera tarea
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {tasks.map((task) => (
+            <Card
+              key={task.id}
+              className={`border ${getPriorityColor(task.priority)} ${task.completed ? "" : "hover:bg-purple-50/50 hover:border-purple-200"} group transition-colors duration-200`}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <Checkbox checked={task.completed} onCheckedChange={() => toggleCompleted(task)} className="mt-1" />
+                  <div className="flex-1 space-y-2">
+                    <h3 className={`text-lg font-semibold ${task.completed ? "line-through text-gray-600" : "text-gray-800"}`}>
                     {task.title}
                   </h3>
-                  {task.description && <p className="text-sm text-gray-600 mb-1">{task.description}</p>}
+                    {task.description && <p className="text-sm text-gray-600">{task.description}</p>}
 
                   {/* Tags Display */}
                   {task.tags && task.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-2">
+                      <div className="flex flex-wrap gap-1">
                       {task.tags.map((tag) => (
-                        <Badge key={tag.id} variant="outline" className="text-xs flex items-center gap-1 px-2 py-1">
+                        <Badge
+                          key={tag.id}
+                          variant="outline"
+                          className="text-xs flex items-center gap-1 px-2 py-1 border-purple-200 text-purple-700 bg-purple-50"
+                        >
                           <span className="text-sm">{tag.icon}</span>
                           <span>{tag.name}</span>
                           {tag.parent_name && <span className="text-gray-500">({tag.parent_name})</span>}
@@ -467,42 +499,47 @@ export default function TasksManager() {
 
                   {task.due_date && (
                     <div className="flex items-center gap-1 text-sm">
-                      <Calendar className="w-4 h-4" />
-                      <span className={isOverdue(task.due_date) ? "text-red-600" : ""}>
+                        <Calendar className="w-4 h-4 text-purple-500" />
+                        <span className={isOverdue(task.due_date) ? "text-red-600 font-medium" : "text-purple-600"}>
                         {new Date(task.due_date).toLocaleDateString()}
                       </span>
                     </div>
                   )}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {getPriorityIcon(task.priority)}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => openTagsDialog(task)}>
-                      <Tag className="w-4 h-4 mr-2" />
-                      Etiquetas
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openEditDialog(task)}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Editar
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDeleteTask(task)} className="text-red-600">
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Eliminar
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {getPriorityIcon(task.priority)}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => openTagsDialog(task)}>
+                          <Tag className="w-4 h-4 mr-2" />
+                          Etiquetas
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openEditDialog(task)}>
+                          <Edit className="w-4 h-4 mr-2" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteTask(task)} className="text-red-600">
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+          ))}
+          </div>
+      )}
     </div>
   )
 }
