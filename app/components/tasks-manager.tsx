@@ -11,15 +11,35 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { CheckSquare, Plus, Calendar, AlertTriangle, Clock, Edit, Trash2, MoreHorizontal, Tag } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { getTasks, createTask, updateTask, deleteTask, updateTaskTags, type Task } from "@/lib/supabase"
+import { getTasks, createTask, updateTask, deleteTask, updateTaskTags, getTagsGrouped, type Task } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
+import { useFilterLogic } from "../hooks/use-filter-logic"
 import TagSelector from "./tag-selector"
+import FilterButton from "./filter-button"
+import FilterPanel from "./filter-panel"
 
 export default function TasksManager() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [allTags, setAllTags] = useState<any[]>([])
   const { toast } = useToast()
+
+  // Use filter logic hook
+  const {
+    searchTerm,
+    selectedFilterTags,
+    statusFilter,
+    sortByDate,
+    showFilters,
+    filteredItems: filteredTasks,
+    setSearchTerm,
+    setSelectedFilterTags,
+    setStatusFilter,
+    setSortByDate,
+    setShowFilters,
+    clearFilters,
+  } = useFilterLogic({ items: tasks, type: "tasks" })
 
   const [newTask, setNewTask] = useState({
     title: "",
@@ -36,6 +56,7 @@ export default function TasksManager() {
 
   useEffect(() => {
     loadTasks()
+    loadAllTags()
   }, [])
 
   const loadTasks = async () => {
@@ -52,6 +73,16 @@ export default function TasksManager() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadAllTags = async () => {
+    try {
+      const tagsGrouped = await getTagsGrouped()
+      const flatTags = Object.values(tagsGrouped).flat()
+      setAllTags(flatTags)
+    } catch (error) {
+      console.error("Error loading tags:", error)
     }
   }
 
@@ -260,8 +291,8 @@ export default function TasksManager() {
     return new Date(dueDate) < new Date()
   }
 
-  const completedCount = tasks.filter((t) => t.completed).length
-  const totalCount = tasks.length
+  const completedCount = filteredTasks.filter((t) => t.completed).length
+  const totalCount = filteredTasks.length
   const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
 
   if (loading) {
@@ -286,14 +317,45 @@ export default function TasksManager() {
         <div>
           <h2 className="text-2xl font-bold text-purple-700">Tareas del Viaje</h2>
         </div>
-        <Button
-          onClick={openNewDialog}
-          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Nueva Tarea
-        </Button>
+        <div className="flex gap-2">
+          <FilterButton
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            selectedFilterTags={selectedFilterTags}
+            onFilterTagsChange={setSelectedFilterTags}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            sortByDate={sortByDate}
+            onSortByDateChange={setSortByDate}
+            allTags={allTags}
+            type="tasks"
+            showFilters={showFilters}
+            onShowFiltersChange={setShowFilters}
+          />
+          <Button
+            onClick={openNewDialog}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
+
+      {/* Filters Panel - aparece en su propia fila */}
+      <FilterPanel
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        selectedFilterTags={selectedFilterTags}
+        onFilterTagsChange={setSelectedFilterTags}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        sortByDate={sortByDate}
+        onSortByDateChange={setSortByDate}
+        allTags={allTags}
+        type="tasks"
+        showFilters={showFilters}
+        onShowFiltersChange={setShowFilters}
+      />
 
       {/* Dialog para Tarea */}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -450,23 +512,39 @@ export default function TasksManager() {
       </Card>
 
       {/* Task List */}
-      {tasks.length === 0 ? (
+      {filteredTasks.length === 0 ? (
         <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
           <CardContent className="text-center py-12">
             <CheckSquare className="w-16 h-16 text-purple-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-purple-700 mb-2">¡No hay tareas aún!</h3>
-            <p className="text-purple-600 mb-4">Comenzá agregando tareas para organizar tu viaje a Disney</p>
-            <Button
-              onClick={openNewDialog}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
-            >
-              Crear primera tarea
-            </Button>
+            <h3 className="text-lg font-medium text-purple-700 mb-2">
+              {tasks.length === 0 ? "¡No hay tareas aún!" : "No se encontraron tareas"}
+            </h3>
+            <p className="text-purple-600 mb-4">
+              {tasks.length === 0
+                ? "Comenzá agregando tareas para organizar tu viaje a Disney"
+                : "Intentá ajustar los filtros para encontrar lo que buscás"}
+            </p>
+            {tasks.length === 0 ? (
+              <Button
+                onClick={openNewDialog}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
+              >
+                Crear primera tarea
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={clearFilters}
+                className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+              >
+                Limpiar filtros
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
-          {tasks.map((task) => (
+            {filteredTasks.map((task) => (
             <Card
               key={task.id}
               className={`border ${getPriorityColor(task.priority)} ${task.completed ? "" : "hover:bg-purple-50/50 hover:border-purple-200"} group transition-colors duration-200`}

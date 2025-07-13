@@ -9,7 +9,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
 import {
   Film,
   Plus,
@@ -22,9 +21,6 @@ import {
   TagIcon,
   Calendar,
   Camera,
-  Search,
-  Filter,
-  X,
   Images,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -39,24 +35,36 @@ import {
   uploadMoviePhoto,
 } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
+import { useFilterLogic } from "../hooks/use-filter-logic"
 import TagSelector from "./tag-selector"
 import PhotoGallery from "./photo-gallery"
+import FilterButton from "./filter-button"
+import FilterPanel from "./filter-panel"
 
 export default function MoviesTracker() {
   const [movies, setMovies] = useState<Movie[]>([])
-  const [filteredMovies, setFilteredMovies] = useState<Movie[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
   const { toast } = useToast()
-
-  // Filter states
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedFilterTags, setSelectedFilterTags] = useState<string[]>([])
-  const [watchedFilter, setWatchedFilter] = useState<"all" | "watched" | "unwatched">("all")
-  const [showPhotos, setShowPhotos] = useState(false)
-  const [showFilters, setShowFilters] = useState(false)
   const [allTags, setAllTags] = useState<any[]>([])
-  const [openFilterTagSelector, setOpenFilterTagSelector] = useState(false)
+
+  // Use filter logic hook
+  const {
+    searchTerm,
+    selectedFilterTags,
+    statusFilter,
+    sortByDate,
+    showPhotos,
+    showFilters,
+    filteredItems: filteredMovies,
+    setSearchTerm,
+    setSelectedFilterTags,
+    setStatusFilter,
+    setSortByDate,
+    setShowPhotos,
+    setShowFilters,
+    clearFilters,
+  } = useFilterLogic({ items: movies, type: "movies" })
 
   // Photo viewer state
   const [selectedMoviePhotos, setSelectedMoviePhotos] = useState<{
@@ -85,10 +93,6 @@ export default function MoviesTracker() {
     loadAllTags()
   }, [])
 
-  useEffect(() => {
-    filterMovies()
-  }, [movies, searchTerm, selectedFilterTags, watchedFilter])
-
   const loadMovies = async () => {
     try {
       setLoading(true)
@@ -116,38 +120,7 @@ export default function MoviesTracker() {
     }
   }
 
-  const filterMovies = () => {
-    let filtered = movies
 
-    // Filter by search term
-    if (searchTerm.trim()) {
-      filtered = filtered.filter(
-        (movie) =>
-          movie.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          movie.notes?.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-    }
-
-    // Filter by tags
-    if (selectedFilterTags.length > 0) {
-      filtered = filtered.filter((movie) => movie.tags?.some((tag) => selectedFilterTags.includes(tag.id)))
-    }
-
-    // Filter by watched status
-    if (watchedFilter !== "all") {
-      filtered = filtered.filter((movie) =>
-        watchedFilter === "watched" ? movie.watched : !movie.watched
-      )
-    }
-
-    setFilteredMovies(filtered)
-  }
-
-  const clearFilters = () => {
-    setSearchTerm("")
-    setSelectedFilterTags([])
-    setWatchedFilter("all")
-  }
 
   const handleAddMovie = async () => {
     if (!newMovie.title) return
@@ -454,9 +427,7 @@ export default function MoviesTracker() {
     setSelectedMoviePhotos(null)
   }
 
-  const getFilteredTagsForDisplay = () => {
-    return selectedFilterTags.map((tagId) => allTags.find((tag) => tag.id === tagId)).filter(Boolean) as any[]
-  }
+
 
   if (loading) {
     return (
@@ -481,19 +452,22 @@ export default function MoviesTracker() {
           <h2 className="text-2xl font-bold text-purple-700">Películas y Documentales</h2>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => setShowFilters(!showFilters)} 
-            className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
-          >
-            <Filter className="w-4 h-4" />
-            Filtros
-            {(searchTerm || selectedFilterTags.length > 0 || watchedFilter !== "all") && (
-              <Badge variant="secondary" className="ml-1 bg-purple-100 text-purple-700">
-                {(searchTerm ? 1 : 0) + selectedFilterTags.length + (watchedFilter !== "all" ? 1 : 0)}
-              </Badge>
-            )}
-          </Button>
+          <FilterButton
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            selectedFilterTags={selectedFilterTags}
+            onFilterTagsChange={setSelectedFilterTags}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            sortByDate={sortByDate}
+            onSortByDateChange={setSortByDate}
+            showPhotos={showPhotos}
+            onShowPhotosChange={setShowPhotos}
+            allTags={allTags}
+            type="movies"
+            showFilters={showFilters}
+            onShowFiltersChange={setShowFilters}
+          />
           <Button 
             onClick={openNewDialog} 
             className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
@@ -503,163 +477,25 @@ export default function MoviesTracker() {
         </div>
       </div>
 
-      {/* Filters Section */}
-      {showFilters && (
-        <Card className="bg-gray-50 border-gray-200">
-          <CardContent className="p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium text-gray-700">Filtros</h3>
-              {(searchTerm || selectedFilterTags.length > 0 || watchedFilter !== "all") && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={clearFilters} 
-                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-                >
-                  <X className="w-4 h-4 mr-1" />
-                  Limpiar
-                </Button>
-              )}
-            </div>
+      {/* Filters Panel - aparece en su propia fila */}
+      <FilterPanel
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        selectedFilterTags={selectedFilterTags}
+        onFilterTagsChange={setSelectedFilterTags}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        sortByDate={sortByDate}
+        onSortByDateChange={setSortByDate}
+        showPhotos={showPhotos}
+        onShowPhotosChange={setShowPhotos}
+        allTags={allTags}
+        type="movies"
+        showFilters={showFilters}
+        onShowFiltersChange={setShowFilters}
+      />
 
-            {/* Search Input */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Buscá por título o notas..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
 
-            {/* Tag Filter */}
-            <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">Filtrar por etiquetas</Label>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setOpenFilterTagSelector(true)}
-                  className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
-                >
-                  <TagIcon className="w-4 h-4" />
-                  {selectedFilterTags.length > 0
-                    ? `${selectedFilterTags.length} etiquetas seleccionadas`
-                    : "Seleccionar etiquetas"}
-                </Button>
-                {selectedFilterTags.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedFilterTags([])}
-                    className="text-purple-600 hover:text-red-500 hover:bg-red-50"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-              {/* Preview de etiquetas seleccionadas */}
-              {selectedFilterTags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {getFilteredTagsForDisplay().map((tag) => (
-                    <Badge 
-                      key={tag.id} 
-                      variant="secondary" 
-                      className="text-xs flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 border-purple-200"
-                    >
-                      <span className="text-sm">{tag.icon}</span>
-                      <span>{tag.name}</span>
-                      {tag.parent_name && <span className="text-gray-500">({tag.parent_name})</span>}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Watched Status Filter */}
-            <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">Estado de visualización</Label>
-              <div className="flex gap-2">
-                <Button
-                  variant={watchedFilter === "all" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setWatchedFilter("all")}
-                  className={watchedFilter === "all"
-                    ? "bg-purple-600 text-white hover:bg-purple-700"
-                    : "border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
-                  }
-                >
-                  <Film className="w-4 h-4 mr-1" />
-                  Todas
-                </Button>
-                <Button
-                  variant={watchedFilter === "watched" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setWatchedFilter("watched")}
-                  className={watchedFilter === "watched"
-                    ? "bg-green-600 text-white hover:bg-green-700"
-                    : "border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
-                  }
-                >
-                  <Check className="w-4 h-4 mr-1" />
-                  Vistas
-                </Button>
-                <Button
-                  variant={watchedFilter === "unwatched" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setWatchedFilter("unwatched")}
-                  className={watchedFilter === "unwatched"
-                    ? "bg-orange-600 text-white hover:bg-orange-700"
-                    : "border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
-                  }
-                >
-                  <Play className="w-4 h-4 mr-1" />
-                  Por ver
-                </Button>
-              </div>
-            </div>
-
-            {/* Active Filters Display */}
-            {(searchTerm || watchedFilter !== "all") && (
-              <div className="pt-2 border-t">
-                <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-sm text-gray-600">Filtros activos:</span>
-                  {searchTerm && (
-                    <Badge variant="secondary" className="flex items-center gap-1 bg-purple-100 text-purple-700">
-                      <Search className="w-3 h-3" />"{searchTerm}"
-                      <X className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => setSearchTerm("")} />
-                    </Badge>
-                  )}
-                  {watchedFilter !== "all" && (
-                    <Badge variant="secondary" className={`flex items-center gap-1 ${watchedFilter === "watched"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-orange-100 text-orange-700"
-                      }`}>
-                      {watchedFilter === "watched" ? (
-                        <Check className="w-3 h-3" />
-                      ) : (
-                        <Play className="w-3 h-3" />
-                      )}
-                      {watchedFilter === "watched" ? "Vistas" : "Por ver"}
-                      <X className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => setWatchedFilter("all")} />
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Photo Display Toggle */}
-            <div className="flex items-center justify-end gap-2 text-sm text-gray-600">
-              <Images className="w-4 h-4" />
-              <Label htmlFor="show-photos" className="text-sm">
-                Mostrar fotos
-              </Label>
-              <Switch id="show-photos" checked={showPhotos} onCheckedChange={setShowPhotos} />
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Dialog para Película */}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -805,14 +641,7 @@ export default function MoviesTracker() {
         }}
       />
 
-      {/* Tag Selector for Filters */}
-      <TagSelector
-        selectedTags={selectedFilterTags}
-        onTagsChange={setSelectedFilterTags}
-        open={openFilterTagSelector}
-        onOpenChange={setOpenFilterTagSelector}
-        title="Filtrar por Etiquetas"
-      />
+
 
       {/* Photo Viewer Dialog */}
       {selectedMoviePhotos && (
