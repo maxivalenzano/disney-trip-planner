@@ -95,7 +95,7 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] sm:max-h-[80vh] w-[95vw] sm:w-full mx-4 sm:mx-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] sm:max-h-[80vh] w-[95vw] sm:w-full sm:mx-auto">
         <DialogHeader className="pb-4">
           <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Search className="w-5 h-5 text-purple-600" />
