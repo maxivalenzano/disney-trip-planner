@@ -168,6 +168,14 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
                                   e.currentTarget.style.display = 'none'
                                 }}
                               />
+                              {/* Puntaje IMDB */}
+                              {movie.imdb_score && (
+                                <div className="mt-1 text-center">
+                                  <div className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1 py-0.5">
+                                    ⭐ {movie.imdb_score.toFixed(1)}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                           

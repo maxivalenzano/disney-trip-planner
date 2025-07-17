@@ -9,6 +9,8 @@ export interface JustWatchResult {
   full_path: string
   poster?: string
   justwatch_url: string
+  imdb_score?: number
+  imdb_votes?: number
 }
 
 export interface JustWatchSearchResponse {
@@ -25,6 +27,15 @@ export interface JustWatchSearchResponse {
             title: string
             originalReleaseYear: number
             posterUrl: string
+            scoring?: {
+              imdbScore?: number
+              imdbVotes?: number
+              tmdbScore?: number
+              tmdbPopularity?: number
+              tomatoMeter?: number
+              certifiedFresh?: boolean
+              __typename: string
+            }
             __typename: string
           }
           watchNowOffer?: {
@@ -69,86 +80,86 @@ const SEARCH_CONFIGS = [
 // Función auxiliar para realizar búsqueda con una configuración específica
 async function searchWithConfig(query: string, config: { country: string, language: string, name: string }): Promise<JustWatchResult[]> {
   const graphQLQuery = `
-    query GetSearchResults($country: Country!, $language: Language!, $first: Int!, $searchQuery: String, $location: String!) {
+    query GetSearchTitles($country: Country!, $first: Int! = 5, $language: Language!, $searchAfterCursor: String, $searchTitlesFilter: TitleFilter, $searchTitlesSortBy: PopularTitlesSorting! = POPULAR, $sortRandomSeed: Int! = 0, $location: String!) {
       searchTitles(
+        after: $searchAfterCursor
         country: $country
+        filter: $searchTitlesFilter
         first: $first
-        filter: {searchQuery: $searchQuery, includeTitlesWithoutUrl: true}
+        sortBy: $searchTitlesSortBy
+        sortRandomSeed: $sortRandomSeed
         source: $location
       ) {
         edges {
-          node {
-            ...SuggestedTitle
-            __typename
-          }
+          ...SearchTitleGraphql
           __typename
         }
-        __typename
-      }
-      popularPeople(
-        country: $country
-        first: $first
-        filter: {searchQuery: $searchQuery}
-      ) {
-        edges {
-          node {
-            ...SuggestedPerson
-            __typename
-          }
+        pageInfo {
+          startCursor
+          endCursor
+          hasPreviousPage
+          hasNextPage
           __typename
         }
+        totalCount
         __typename
       }
     }
 
-    fragment SuggestedTitle on MovieOrShow {
-      __typename
-      id
-      objectType
-      objectId
-      content(country: $country, language: $language) {
-        fullPath
-        title
-        originalReleaseYear
-        posterUrl
-        fullPath
+    fragment SearchTitleGraphql on TitleSearchResultEdge {
+      cursor
+      node {
         __typename
-      }
-      watchNowOffer(country: $country, platform: WEB) {
         id
-        standardWebURL
-        preAffiliatedStandardWebURL
-        package {
-          id
-          packageId
+        objectId
+        objectType
+        content(country: $country, language: $language) {
+          title
+          fullPath
+          originalReleaseYear
+          genres {
+            shortName
+            __typename
+          }
+          scoring {
+            imdbScore
+            imdbVotes
+            tmdbScore
+            tmdbPopularity
+            tomatoMeter
+            certifiedFresh
+            __typename
+          }
+          posterUrl
+          backdrops {
+            backdropUrl
+            __typename
+          }
+          upcomingReleases(releaseTypes: [DIGITAL]) {
+            releaseDate
+            __typename
+          }
           __typename
         }
-        __typename
-      }
-      offers(country: $country, platform: WEB, filter: {preAffiliate: true}) {
-        monetizationType
-        presentationType
-        standardWebURL
-        preAffiliatedStandardWebURL
-        package {
+        watchNowOffer(country: $country, platform: WEB) {
           id
-          packageId
+          standardWebURL
+          preAffiliatedStandardWebURL
           __typename
         }
-        id
-        __typename
-      }
-    }
-
-    fragment SuggestedPerson on Person {
-      id
-      objectType
-      objectId
-      content(country: $country, language: $language) {
-        fullName
-        dateOfBirth
-        portraitUrl(profile: S332)
-        __typename
+        offers(country: $country, platform: WEB, filter: {preAffiliate: true}) {
+          monetizationType
+          presentationType
+          standardWebURL
+          preAffiliatedStandardWebURL
+          package {
+            id
+            packageId
+            __typename
+          }
+          id
+          __typename
+        }
       }
       __typename
     }
@@ -165,13 +176,20 @@ async function searchWithConfig(query: string, config: { country: string, langua
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     },
     body: JSON.stringify({
-      operationName: 'GetSearchResults',
+      operationName: 'GetSearchTitles',
       variables: {
-        country: config.country,
-        language: config.language,
-        searchQuery: query.trim(),
         first: 8,
-        location: 'SearchSuggester'
+        searchTitlesSortBy: "POPULAR",
+        sortRandomSeed: 0,
+        searchAfterCursor: "",
+        searchTitlesFilter: {
+          searchQuery: query.trim(),
+          personId: null,
+          includeTitlesWithoutUrl: true
+        },
+        language: config.language,
+        country: config.country,
+        location: 'SearchPage'
       },
       query: graphQLQuery
     })
@@ -192,7 +210,7 @@ async function searchWithConfig(query: string, config: { country: string, langua
     return []
   }
 
-  // Process GraphQL results - solo películas
+  // Process GraphQL results - solo películas y series
   return data.data.searchTitles.edges
     .filter((edge) => ['Movie', 'Show'].includes(edge.node.__typename))
     .map((edge) => {
@@ -222,7 +240,9 @@ async function searchWithConfig(query: string, config: { country: string, langua
         poster: content.posterUrl 
           ? `https://images.justwatch.com${content.posterUrl.replace('{profile}', 's166').replace('{format}', 'jpg')}` 
           : undefined,
-        justwatch_url: streamingLink
+        justwatch_url: streamingLink,
+        imdb_score: content.scoring?.imdbScore,
+        imdb_votes: content.scoring?.imdbVotes
       }
     })
 }

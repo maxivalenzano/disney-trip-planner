@@ -7,6 +7,8 @@ export interface JustWatchResult {
   full_path: string
   poster?: string
   justwatch_url: string
+  imdb_score?: number
+  imdb_votes?: number
 }
 
 export async function searchJustWatchMovies(query: string): Promise<JustWatchResult[]> {
