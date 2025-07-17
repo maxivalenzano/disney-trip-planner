@@ -61,8 +61,8 @@ const JUSTWATCH_GRAPHQL_URL = 'https://apis.justwatch.com/graphql'
 
 // Configuraciones de búsqueda por orden de prioridad
 const SEARCH_CONFIGS = [
-  { country: 'MX', language: 'es', name: 'Español Latino (México)' },
-  { country: 'US', language: 'en', name: 'Inglés (Estados Unidos)' },
+  { country: 'AR', language: 'es', name: 'Español Latino' },
+  { country: 'US', language: 'en', name: 'Inglés' },
   { country: 'ES', language: 'es', name: 'Español España' }
 ]
 
@@ -194,7 +194,7 @@ async function searchWithConfig(query: string, config: { country: string, langua
 
   // Process GraphQL results - solo películas
   return data.data.searchTitles.edges
-    .filter((edge) => edge.node.__typename === 'Movie')
+    .filter((edge) => ['Movie', 'Show'].includes(edge.node.__typename))
     .map((edge) => {
       const node = edge.node
       const content = node.content
@@ -216,7 +216,7 @@ async function searchWithConfig(query: string, config: { country: string, langua
         id: node.objectId,
         title: content.title,
         original_title: content.title, // GraphQL no separa título original
-        object_type: 'movie',
+        object_type: node.__typename === 'Movie' ? 'movie' : 'show',
         original_release_year: content.originalReleaseYear,
         full_path: content.fullPath || '',
         poster: content.posterUrl 
