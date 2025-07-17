@@ -26,7 +26,6 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   getMovies,
-  createMovie,
   updateMovie,
   deleteMovie,
   updateMovieTags,
@@ -40,6 +39,7 @@ import TagSelector from "./tag-selector"
 import PhotoGallery from "./photo-gallery"
 import FilterButton from "./filter-button"
 import FilterPanel from "./filter-panel"
+import AddMovieDialog from "./add-movie-dialog"
 
 export default function MoviesTracker() {
   const [movies, setMovies] = useState<Movie[]>([])
@@ -72,16 +72,9 @@ export default function MoviesTracker() {
     photos: any[]
   } | null>(null)
 
-  const [newMovie, setNewMovie] = useState({
-    title: "",
-    year: new Date().getFullYear(),
-    disney_plus_link: "",
-    notes: "",
-    watch_date: "",
-  })
-
   const [editingMovie, setEditingMovie] = useState<Movie | null>(null)
-  const [openDialog, setOpenDialog] = useState(false)
+  const [openEditDialog, setOpenEditDialog] = useState(false)
+  const [openAddDialog, setOpenAddDialog] = useState(false)
   const [openTagSelector, setOpenTagSelector] = useState(false)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [currentMovieId, setCurrentMovieId] = useState<string | null>(null)
@@ -122,53 +115,7 @@ export default function MoviesTracker() {
 
 
 
-  const handleAddMovie = async () => {
-    if (!newMovie.title) return
 
-    try {
-      setCreating(true)
-      const movie = await createMovie({
-        title: newMovie.title,
-        year: newMovie.year,
-        watched: false,
-        disney_plus_link: newMovie.disney_plus_link || undefined,
-        notes: newMovie.notes || undefined,
-        watch_date: newMovie.watch_date || undefined,
-      })
-
-      // Update tags if any selected
-      if (selectedTags.length > 0) {
-        await updateMovieTags(movie.id, selectedTags)
-      }
-
-      // Reload movies to get updated data with tags
-      await loadMovies()
-
-      setNewMovie({
-        title: "",
-        year: new Date().getFullYear(),
-        disney_plus_link: "",
-        notes: "",
-        watch_date: "",
-      })
-      setSelectedTags([])
-      setOpenDialog(false)
-
-      toast({
-        title: "¡Película agregada!",
-        description: `${movie.title} se ha agregado a tu lista`,
-      })
-    } catch (error) {
-      console.error("Error creating movie:", error)
-      toast({
-        title: "Error",
-        description: "No se pudo agregar la película",
-        variant: "destructive",
-      })
-    } finally {
-      setCreating(false)
-    }
-  }
 
   const handleEditMovie = async () => {
     if (!editingMovie || !editingMovie.title) return
@@ -191,7 +138,7 @@ export default function MoviesTracker() {
 
       setEditingMovie(null)
       setSelectedTags([])
-      setOpenDialog(false)
+      setOpenEditDialog(false)
 
       toast({
         title: "¡Película actualizada!",
@@ -254,23 +201,14 @@ export default function MoviesTracker() {
     }
   }
 
-  const openEditDialog = (movie: Movie) => {
+  const handleOpenEditDialog = (movie: Movie) => {
     setEditingMovie({ ...movie })
     setSelectedTags(movie.tags?.map((tag) => tag.id) || [])
-    setOpenDialog(true)
+    setOpenEditDialog(true)
   }
 
-  const openNewDialog = () => {
-    setEditingMovie(null)
-    setSelectedTags([])
-    setNewMovie({
-      title: "",
-      year: new Date().getFullYear(),
-      disney_plus_link: "",
-      notes: "",
-      watch_date: "",
-    })
-    setOpenDialog(true)
+  const handleOpenAddDialog = () => {
+    setOpenAddDialog(true)
   }
 
   const openTagsDialog = (movie: Movie) => {
@@ -469,7 +407,7 @@ export default function MoviesTracker() {
             onShowFiltersChange={setShowFilters}
           />
           <Button 
-            onClick={openNewDialog} 
+            onClick={handleOpenAddDialog} 
             className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
           >
             <Plus className="w-4 h-4" />
@@ -497,24 +435,30 @@ export default function MoviesTracker() {
 
 
 
-      {/* Dialog para Película */}
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+      {/* Dialog para Agregar Película */}
+      <AddMovieDialog
+        open={openAddDialog}
+        onOpenChange={setOpenAddDialog}
+        onMovieAdded={loadMovies}
+      />
+
+      {/* Dialog para Editar Película */}
+      <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editingMovie ? "Editar Película" : "Agregar Nueva Película"}</DialogTitle>
+            <DialogTitle>Editar Película</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <Label htmlFor="movieTitle">Título</Label>
               <Input
                 id="movieTitle"
-                value={editingMovie ? editingMovie.title : newMovie.title}
+                value={editingMovie?.title || ""}
                 onChange={(e) =>
-                  editingMovie
-                    ? setEditingMovie({ ...editingMovie, title: e.target.value })
-                    : setNewMovie({ ...newMovie, title: e.target.value })
+                  setEditingMovie(editingMovie ? { ...editingMovie, title: e.target.value } : null)
                 }
                 placeholder="Ej: El Rey León"
+                disabled={creating}
               />
             </div>
 
@@ -524,12 +468,11 @@ export default function MoviesTracker() {
                 <Input
                   id="movieYear"
                   type="number"
-                  value={editingMovie ? editingMovie.year || "" : newMovie.year}
+                  value={editingMovie?.year || ""}
                   onChange={(e) =>
-                    editingMovie
-                      ? setEditingMovie({ ...editingMovie, year: Number.parseInt(e.target.value) || undefined })
-                      : setNewMovie({ ...newMovie, year: Number.parseInt(e.target.value) })
+                    setEditingMovie(editingMovie ? { ...editingMovie, year: Number.parseInt(e.target.value) || undefined } : null)
                   }
+                  disabled={creating}
                 />
               </div>
 
@@ -538,41 +481,41 @@ export default function MoviesTracker() {
                 <Input
                   id="watchDate"
                   type="date"
-                  value={editingMovie ? editingMovie.watch_date || "" : newMovie.watch_date}
+                  value={editingMovie?.watch_date || ""}
                   onChange={(e) =>
-                    editingMovie
-                      ? setEditingMovie({ ...editingMovie, watch_date: e.target.value })
-                      : setNewMovie({ ...newMovie, watch_date: e.target.value })
+                    setEditingMovie(editingMovie ? { ...editingMovie, watch_date: e.target.value } : null)
                   }
+                  disabled={creating}
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="disneyLink">Enlace Disney+ (opcional)</Label>
+              <Label htmlFor="streamingLink">Enlace de streaming (opcional)</Label>
               <Input
-                id="disneyLink"
-                value={editingMovie ? editingMovie.disney_plus_link || "" : newMovie.disney_plus_link}
+                id="streamingLink"
+                value={editingMovie?.disney_plus_link || ""}
                 onChange={(e) =>
-                  editingMovie
-                    ? setEditingMovie({ ...editingMovie, disney_plus_link: e.target.value })
-                    : setNewMovie({ ...newMovie, disney_plus_link: e.target.value })
+                  setEditingMovie(editingMovie ? { ...editingMovie, disney_plus_link: e.target.value } : null)
                 }
-                placeholder="https://disneyplus.com/..."
+                placeholder="https://justwatch.com/... o https://disneyplus.com/..."
+                disabled={creating}
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Enlace a Disney+, JustWatch u otra plataforma de streaming
+              </p>
             </div>
 
             <div>
               <Label htmlFor="movieNotes">Notas</Label>
               <Textarea
                 id="movieNotes"
-                value={editingMovie ? editingMovie.notes || "" : newMovie.notes}
+                value={editingMovie?.notes || ""}
                 onChange={(e) =>
-                  editingMovie
-                    ? setEditingMovie({ ...editingMovie, notes: e.target.value })
-                    : setNewMovie({ ...newMovie, notes: e.target.value })
+                  setEditingMovie(editingMovie ? { ...editingMovie, notes: e.target.value } : null)
                 }
                 placeholder="¿Por qué quieres ver esta película?"
+                disabled={creating}
               />
             </div>
 
@@ -586,6 +529,7 @@ export default function MoviesTracker() {
                   size="sm"
                   onClick={() => setOpenTagSelector(true)}
                   className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+                  disabled={creating}
                 >
                   <TagIcon className="w-4 h-4" />
                   {selectedTags.length > 0 ? `${selectedTags.length} seleccionadas` : "Seleccionar etiquetas"}
@@ -603,11 +547,11 @@ export default function MoviesTracker() {
             </div>
 
             <Button 
-              onClick={editingMovie ? handleEditMovie : handleAddMovie} 
-              disabled={creating} 
+              onClick={handleEditMovie}
+              disabled={creating || !editingMovie?.title?.trim()} 
               className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
             >
-              {creating ? "Guardando..." : editingMovie ? "Actualizar Película" : "Agregar Película"}
+              {creating ? "Guardando..." : "Actualizar Película"}
             </Button>
           </div>
         </DialogContent>
@@ -814,24 +758,27 @@ export default function MoviesTracker() {
                         >
                           <a href={movie.disney_plus_link} target="_blank" rel="noopener noreferrer">
                             <Play className="w-3 h-3 mr-1" />
-                            Disney+
+                            {movie.disney_plus_link.includes('justwatch.com') ? 'JustWatch' :
+                              movie.disney_plus_link.includes('disneyplus.com') ? 'Disney+' :
+                                'Ver online'}
                             <ExternalLink className="w-3 h-3 ml-1" />
                           </a>
                         </Button>
                       )}
                     </div>
                   </div>
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity text-purple-600 hover:text-purple-700 hover:bg-purple-50 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
+                        aria-label={`Opciones para ${movie.title}`}
                       >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent align="end" side="bottom" sideOffset={4}>
                       <DropdownMenuItem onClick={() => openTagsDialog(movie)}>
                         <TagIcon className="w-4 h-4 mr-2" />
                         Etiquetas
@@ -840,7 +787,7 @@ export default function MoviesTracker() {
                         <Camera className="w-4 h-4 mr-2" />
                         {uploadingPhoto ? "Subiendo..." : "Agregar fotos"}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => openEditDialog(movie)}>
+                      <DropdownMenuItem onClick={() => handleOpenEditDialog(movie)}>
                         <Edit className="w-4 h-4 mr-2" />
                         Editar
                       </DropdownMenuItem>
