@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import SharedLayout from "./components/shared-layout"
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -77,6 +78,7 @@ export default function RootLayout({
             {children}
           </SharedLayout>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )

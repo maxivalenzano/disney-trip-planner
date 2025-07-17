@@ -1,3 +1,5 @@
+import { NextRequest, NextResponse } from 'next/server'
+
 export interface JustWatchResult {
   id: number
   title: string
@@ -63,69 +65,6 @@ const SEARCH_CONFIGS = [
   { country: 'US', language: 'en', name: 'Inglés (Estados Unidos)' },
   { country: 'ES', language: 'es', name: 'Español España' }
 ]
-
-// Función principal que usa el API route (recomendada para producción)
-export async function searchJustWatchMovies(query: string): Promise<JustWatchResult[]> {
-  if (!query.trim()) {
-    return []
-  }
-
-  try {
-    console.log(`Iniciando búsqueda vía API route para: "${query}"`)
-    
-    const response = await fetch(`/api/justwatch/search?query=${encodeURIComponent(query)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(`API route error: ${response.status} - ${errorData.error || 'Unknown error'}`)
-    }
-
-    const data = await response.json()
-    
-    console.log(`Búsqueda completada vía API route. Resultados: ${data.results?.length || 0}`)
-    return data.results || []
-    
-  } catch (error) {
-    console.error('Error en searchJustWatchMovies (API route):', error)
-    throw error
-  }
-}
-
-// Función legacy que llama directamente a JustWatch (solo para desarrollo/debugging)
-export async function searchJustWatchMoviesLegacy(query: string): Promise<JustWatchResult[]> {
-  if (!query.trim()) {
-    return []
-  }
-
-  // Intentar con cada configuración en orden de prioridad
-  for (const [index, config] of SEARCH_CONFIGS.entries()) {
-    try {
-      console.log(`Intentando búsqueda con ${config.name}...`)
-      
-      const result = await searchWithConfig(query, config)
-      
-      if (result.length > 0) {
-        console.log(`Éxito con ${config.name}: ${result.length} resultados`)
-        return result
-      }
-      
-      console.log(`Sin resultados con ${config.name}, probando siguiente configuración...`)
-      
-    } catch (error) {
-      console.warn(`Error con ${config.name}:`, error)
-      // Continuar con la siguiente configuración
-    }
-  }
-
-  // Si todas las configuraciones fallan, devolver array vacío
-  console.log('Todas las configuraciones fallaron')
-  return []
-}
 
 // Función auxiliar para realizar búsqueda con una configuración específica
 async function searchWithConfig(query: string, config: { country: string, language: string, name: string }): Promise<JustWatchResult[]> {
@@ -288,4 +227,46 @@ async function searchWithConfig(query: string, config: { country: string, langua
     })
 }
 
- 
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const query = searchParams.get('query')
+
+    if (!query?.trim()) {
+      return NextResponse.json({ error: 'Query parameter is required' }, { status: 400 })
+    }
+
+    console.log(`Búsqueda iniciada para: "${query}"`)
+
+    // Intentar con cada configuración en orden de prioridad
+    for (const [index, config] of SEARCH_CONFIGS.entries()) {
+      try {
+        console.log(`Intentando búsqueda con ${config.name}...`)
+        
+        const result = await searchWithConfig(query, config)
+        
+        if (result.length > 0) {
+          console.log(`Éxito con ${config.name}: ${result.length} resultados`)
+          return NextResponse.json({ results: result, config: config.name })
+        }
+        
+        console.log(`Sin resultados con ${config.name}, probando siguiente configuración...`)
+        
+      } catch (error) {
+        console.warn(`Error con ${config.name}:`, error)
+        // Continuar con la siguiente configuración
+      }
+    }
+
+    // Si todas las configuraciones fallan, devolver array vacío
+    console.log('Todas las configuraciones fallaron')
+    return NextResponse.json({ results: [], config: 'Ninguna' })
+
+  } catch (error) {
+    console.error('Error en API route:', error)
+    return NextResponse.json(
+      { error: 'Error interno del servidor', details: error instanceof Error ? error.message : 'Unknown error' }, 
+      { status: 500 }
+    )
+  }
+} 
