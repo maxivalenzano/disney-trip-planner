@@ -40,6 +40,8 @@ import PhotoGallery from "./photo-gallery"
 import FilterButton from "./filter-button"
 import FilterPanel from "./filter-panel"
 import AddMovieDialog from "./add-movie-dialog"
+import PriorityBadge from "./priority-badge"
+import { getPriorityConfig } from "@/lib/priority-utils"
 
 export default function MoviesTracker() {
   const [movies, setMovies] = useState<Movie[]>([])
@@ -417,31 +419,7 @@ export default function MoviesTracker() {
     }
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-700 border-red-200"
-      case "medium":
-        return "bg-yellow-100 text-yellow-700 border-yellow-200"
-      case "low":
-        return "bg-green-100 text-green-700 border-green-200"
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200"
-    }
-  }
 
-  const getPriorityLabel = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "Alta"
-      case "medium":
-        return "Media"
-      case "low":
-        return "Baja"
-      default:
-        return "Sin prioridad"
-    }
-  }
 
 
 
@@ -873,12 +851,11 @@ export default function MoviesTracker() {
                         className="h-4 w-8 p-0 mr-2 ml-2 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition-opacity text-purple-600 hover:text-purple-700 hover:bg-purple-50 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
                         aria-label={`Opciones para ${movie.title}`}
                       >
-                        <Badge
-                          variant="outline"
-                          className={`text-xs ${getPriorityColor(movie.priority)}`}
-                        >
-                          {getPriorityLabel(movie.priority)}
-                        </Badge>
+                        <PriorityBadge
+                          priority={movie.priority}
+                          size="sm"
+                          showLabel={false}
+                        />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" side="bottom" sideOffset={4}>

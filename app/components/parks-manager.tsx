@@ -23,6 +23,8 @@ import {
   type Attraction,
 } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
+import PriorityBadge from "./priority-badge"
+import { sortByPriority } from "@/lib/priority-utils"
 
 export default function ParksManager() {
   const [parks, setParks] = useState<Park[]>([])
@@ -296,18 +298,7 @@ export default function ParksManager() {
     setOpenAttractionDialog(true)
   }
 
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return <Heart className="w-4 h-4 text-red-500" />
-      case "medium":
-        return <Star className="w-4 h-4 text-yellow-500" />
-      case "low":
-        return <Clock className="w-4 h-4 text-gray-500" />
-      default:
-        return null
-    }
-  }
+
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -324,14 +315,7 @@ export default function ParksManager() {
     }
   }
 
-  const sortAttractionsByPriority = (attractions: Attraction[]) => {
-    const priorityOrder = { high: 3, medium: 2, low: 1 }
-    return attractions.sort((a, b) => {
-      const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 0
-      const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 0
-      return priorityB - priorityA // Orden descendente (alta prioridad primero)
-    })
-  }
+
 
   const toggleParkExpansion = (parkId: string) => {
     setExpandedParks(prev => {
@@ -555,7 +539,7 @@ export default function ParksManager() {
               <CollapsibleContent>
                 <CardContent className="p-4">
                   <div className="space-y-3">
-                    {sortAttractionsByPriority(park.attractions || []).map((attraction) => (
+                    {sortByPriority(park.attractions || []).map((attraction) => (
                       <div key={attraction.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg group">
                         <div className="flex items-center gap-2">
                           {getTypeIcon(attraction.type)}
@@ -571,17 +555,11 @@ export default function ParksManager() {
                               size="sm"
                               className="group-hover:opacity-100 transition-opacity"
                             >
-                              <Badge
-                                variant={
-                                  attraction.priority === "high"
-                                    ? "destructive"
-                                    : attraction.priority === "medium"
-                                      ? "default"
-                                      : "secondary"
-                                }
-                              >
-                                {attraction.priority === "high" ? "Alta" : attraction.priority === "medium" ? "Media" : "Baja"}
-                              </Badge>
+                              <PriorityBadge
+                                priority={attraction.priority}
+                                size="sm"
+                                showLabel={false}
+                              />
                               {/* <MoreHorizontal className="w-4 h-4" /> */}
                             </Button>
                           </DropdownMenuTrigger>

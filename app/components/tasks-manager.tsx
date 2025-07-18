@@ -17,6 +17,9 @@ import { useFilterLogic } from "../hooks/use-filter-logic"
 import TagSelector from "./tag-selector"
 import FilterButton from "./filter-button"
 import FilterPanel from "./filter-panel"
+import PriorityBadge from "./priority-badge"
+import PriorityIcon from "./priority-icon"
+import { getPriorityBadgeClasses } from "@/lib/priority-utils"
 
 export default function TasksManager() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -260,31 +263,7 @@ export default function TasksManager() {
     }
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "text-red-600 bg-red-50 border-red-200"
-      case "medium":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200"
-      case "low":
-        return "text-blue-600 bg-blue-50 border-blue-200"
-      default:
-        return "text-gray-600 bg-gray-50 border-gray-200"
-    }
-  }
 
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return <AlertTriangle className="w-4 h-4 text-red-500" />
-      case "medium":
-        return <Clock className="w-4 h-4 text-yellow-500" />
-      case "low":
-        return <CheckSquare className="w-4 h-4 text-blue-500" />
-      default:
-        return null
-    }
-  }
 
   const isOverdue = (dueDate: string | null) => {
     if (!dueDate) return false
@@ -547,45 +526,45 @@ export default function TasksManager() {
             {filteredTasks.map((task) => (
             <Card
               key={task.id}
-              className={`border ${getPriorityColor(task.priority)} ${task.completed ? "" : "hover:bg-purple-50/50 hover:border-purple-200"} group transition-colors duration-200`}
+              className={`${getPriorityBadgeClasses(task.priority)} ${task.completed ? "" : "hover:bg-purple-50/50 hover:border-purple-200"} group transition-colors duration-200`}
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Checkbox checked={task.completed} onCheckedChange={() => toggleCompleted(task)} className="mt-1" />
                   <div className="flex-1 space-y-2">
                     <h3 className={`text-lg font-semibold ${task.completed ? "line-through text-gray-600" : "text-gray-800"}`}>
-                    {task.title}
-                  </h3>
+                      {task.title}
+                    </h3>
                     {task.description && <p className="text-sm text-gray-600">{task.description}</p>}
 
-                  {/* Tags Display */}
-                  {task.tags && task.tags.length > 0 && (
+                    {/* Tags Display */}
+                    {task.tags && task.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1">
-                      {task.tags.map((tag) => (
-                        <Badge
-                          key={tag.id}
-                          variant="outline"
-                          className="text-xs flex items-center gap-1 px-2 py-1 border-purple-200 text-purple-700 bg-purple-50"
-                        >
-                          <span className="text-sm">{tag.icon}</span>
-                          <span>{tag.name}</span>
-                          {tag.parent_name && <span className="text-gray-500">({tag.parent_name})</span>}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
+                        {task.tags.map((tag) => (
+                          <Badge
+                            key={tag.id}
+                            variant="outline"
+                            className="text-xs flex items-center gap-1 px-2 py-1 border-purple-200 text-purple-700 bg-purple-50"
+                          >
+                            <span className="text-sm">{tag.icon}</span>
+                            <span>{tag.name}</span>
+                            {tag.parent_name && <span className="text-gray-500">({tag.parent_name})</span>}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
 
-                  {task.due_date && (
-                    <div className="flex items-center gap-1 text-sm">
+                    {task.due_date && (
+                      <div className="flex items-center gap-1 text-sm">
                         <Calendar className="w-4 h-4 text-purple-500" />
                         <span className={isOverdue(task.due_date) ? "text-red-600 font-medium" : "text-purple-600"}>
-                        {new Date(task.due_date).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )}
+                          {new Date(task.due_date).toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
-                    {getPriorityIcon(task.priority)}
+                    <PriorityIcon priority={task.priority} />
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -612,9 +591,9 @@ export default function TasksManager() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              </CardContent>
+            </Card>
           ))}
           </div>
       )}
