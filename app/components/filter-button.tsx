@@ -12,8 +12,8 @@ interface FilterButtonProps {
   onFilterTagsChange: (tags: string[]) => void
   statusFilter: string
   onStatusFilterChange: (status: string) => void
-  sortByDate: string
-  onSortByDateChange: (sort: string) => void
+  sortBy: string
+  onSortByChange: (sort: string) => void
   showPhotos?: boolean
   onShowPhotosChange?: (show: boolean) => void
   allTags: any[]

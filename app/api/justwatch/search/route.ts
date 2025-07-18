@@ -224,11 +224,11 @@ async function searchWithConfig(query: string, config: { country: string, langua
 
       // Get best streaming link (prefer watchNowOffer, fallback to first offer)
       let streamingLink = justWatchUrl
-      if (node.watchNowOffer?.standardWebURL) {
-        streamingLink = node.watchNowOffer.standardWebURL
-      } else if (node.offers && node.offers.length > 0) {
-        streamingLink = node.offers[0].standardWebURL || justWatchUrl
-      }
+      // if (node.watchNowOffer?.standardWebURL) {
+      //   streamingLink = node.watchNowOffer.standardWebURL
+      // } else if (node.offers && node.offers.length > 0) {
+      //   streamingLink = node.offers[0].standardWebURL || justWatchUrl
+      // }
 
       return {
         id: node.objectId,

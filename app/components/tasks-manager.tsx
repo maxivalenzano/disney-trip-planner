@@ -30,13 +30,13 @@ export default function TasksManager() {
     searchTerm,
     selectedFilterTags,
     statusFilter,
-    sortByDate,
+    sortBy,
     showFilters,
     filteredItems: filteredTasks,
     setSearchTerm,
     setSelectedFilterTags,
     setStatusFilter,
-    setSortByDate,
+    setSortBy,
     setShowFilters,
     clearFilters,
   } = useFilterLogic({ items: tasks, type: "tasks" })
@@ -325,8 +325,8 @@ export default function TasksManager() {
             onFilterTagsChange={setSelectedFilterTags}
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
-            sortByDate={sortByDate}
-            onSortByDateChange={setSortByDate}
+            sortBy={sortBy}
+            onSortByChange={setSortBy}
             allTags={allTags}
             type="tasks"
             showFilters={showFilters}
@@ -349,8 +349,8 @@ export default function TasksManager() {
         onFilterTagsChange={setSelectedFilterTags}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        sortByDate={sortByDate}
-        onSortByDateChange={setSortByDate}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
         allTags={allTags}
         type="tasks"
         showFilters={showFilters}

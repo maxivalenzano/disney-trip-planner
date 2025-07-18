@@ -53,14 +53,14 @@ export default function MoviesTracker() {
     searchTerm,
     selectedFilterTags,
     statusFilter,
-    sortByDate,
+    sortBy,
     showPhotos,
     showFilters,
     filteredItems: filteredMovies,
     setSearchTerm,
     setSelectedFilterTags,
     setStatusFilter,
-    setSortByDate,
+    setSortBy,
     setShowPhotos,
     setShowFilters,
     clearFilters,
@@ -80,6 +80,12 @@ export default function MoviesTracker() {
   const [currentMovieId, setCurrentMovieId] = useState<string | null>(null)
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
+
+  // Rating dialog state
+  const [ratingDialogOpen, setRatingDialogOpen] = useState(false)
+  const [movieToRate, setMovieToRate] = useState<Movie | null>(null)
+  const [jacquiRating, setJacquiRating] = useState<number>(0)
+  const [maxiRating, setMaxiRating] = useState<number>(0)
 
   useEffect(() => {
     loadMovies()
@@ -128,6 +134,7 @@ export default function MoviesTracker() {
         disney_plus_link: editingMovie.disney_plus_link,
         notes: editingMovie.notes,
         watch_date: editingMovie.watch_date,
+        priority: editingMovie.priority,
       })
 
       // Update tags
@@ -181,6 +188,15 @@ export default function MoviesTracker() {
 
   const toggleWatched = async (movie: Movie) => {
     try {
+      // Si se está marcando como vista y no tiene valoraciones personales, abrir diálogo
+      if (!movie.watched && !movie.jacqui_rating && !movie.maxi_rating) {
+        setMovieToRate(movie)
+        setJacquiRating(0)
+        setMaxiRating(0)
+        setRatingDialogOpen(true)
+        return
+      }
+
       const updatedMovie = await updateMovie(movie.id, {
         watched: !movie.watched,
       })
@@ -365,6 +381,68 @@ export default function MoviesTracker() {
     setSelectedMoviePhotos(null)
   }
 
+  const handleRatingSubmit = async () => {
+    if (!movieToRate) return
+
+    try {
+      const updatedMovie = await updateMovie(movieToRate.id, {
+        watched: true,
+        jacqui_rating: jacquiRating > 0 ? jacquiRating : undefined,
+        maxi_rating: maxiRating > 0 ? maxiRating : undefined,
+      })
+
+      setMovies(movies.map((m) => (m.id === movieToRate.id ? {
+        ...m,
+        watched: true,
+        jacqui_rating: updatedMovie.jacqui_rating,
+        maxi_rating: updatedMovie.maxi_rating
+      } : m)))
+
+      setRatingDialogOpen(false)
+      setMovieToRate(null)
+      setJacquiRating(0)
+      setMaxiRating(0)
+
+      toast({
+        title: "¡Película calificada!",
+        description: `${movieToRate.title} se marcó como vista con sus valoraciones`,
+      })
+    } catch (error) {
+      console.error("Error updating movie ratings:", error)
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar las valoraciones",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-100 text-red-700 border-red-200"
+      case "medium":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200"
+      case "low":
+        return "bg-green-100 text-green-700 border-green-200"
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200"
+    }
+  }
+
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "Alta"
+      case "medium":
+        return "Media"
+      case "low":
+        return "Baja"
+      default:
+        return "Sin prioridad"
+    }
+  }
+
 
 
   if (loading) {
@@ -397,8 +475,8 @@ export default function MoviesTracker() {
             onFilterTagsChange={setSelectedFilterTags}
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
-            sortByDate={sortByDate}
-            onSortByDateChange={setSortByDate}
+            sortBy={sortBy}
+            onSortByChange={setSortBy}
             showPhotos={showPhotos}
             onShowPhotosChange={setShowPhotos}
             allTags={allTags}
@@ -406,8 +484,8 @@ export default function MoviesTracker() {
             showFilters={showFilters}
             onShowFiltersChange={setShowFilters}
           />
-          <Button 
-            onClick={handleOpenAddDialog} 
+          <Button
+            onClick={handleOpenAddDialog}
             className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
           >
             <Plus className="w-4 h-4" />
@@ -423,8 +501,8 @@ export default function MoviesTracker() {
         onFilterTagsChange={setSelectedFilterTags}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        sortByDate={sortByDate}
-        onSortByDateChange={setSortByDate}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
         showPhotos={showPhotos}
         onShowPhotosChange={setShowPhotos}
         allTags={allTags}
@@ -477,17 +555,34 @@ export default function MoviesTracker() {
               </div>
 
               <div>
-                <Label htmlFor="watchDate">Fecha para ver</Label>
-                <Input
-                  id="watchDate"
-                  type="date"
-                  value={editingMovie?.watch_date || ""}
+                <Label htmlFor="priority">Prioridad</Label>
+                <select
+                  id="priority"
+                  value={editingMovie?.priority || "medium"}
                   onChange={(e) =>
-                    setEditingMovie(editingMovie ? { ...editingMovie, watch_date: e.target.value } : null)
+                    setEditingMovie(editingMovie ? { ...editingMovie, priority: e.target.value as "high" | "medium" | "low" } : null)
                   }
                   disabled={creating}
-                />
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                >
+                  <option value="high">Alta</option>
+                  <option value="medium">Media</option>
+                  <option value="low">Baja</option>
+                </select>
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="watchDate">Fecha para ver</Label>
+              <Input
+                id="watchDate"
+                type="date"
+                value={editingMovie?.watch_date || ""}
+                onChange={(e) =>
+                  setEditingMovie(editingMovie ? { ...editingMovie, watch_date: e.target.value } : null)
+                }
+                disabled={creating}
+              />
             </div>
 
             <div>
@@ -546,9 +641,9 @@ export default function MoviesTracker() {
               )}
             </div>
 
-            <Button 
+            <Button
               onClick={handleEditMovie}
-              disabled={creating || !editingMovie?.title?.trim()} 
+              disabled={creating || !editingMovie?.title?.trim()}
               className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
             >
               {creating ? "Guardando..." : "Actualizar Película"}
@@ -605,6 +700,87 @@ export default function MoviesTracker() {
         </Dialog>
       )}
 
+      {/* Rating Dialog */}
+      <Dialog open={ratingDialogOpen} onOpenChange={setRatingDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">¡Calificar Película!</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="text-center">
+              <h3 className="font-semibold text-lg text-purple-700 mb-2">
+                {movieToRate?.title}
+              </h3>
+              <p className="text-sm text-gray-600">
+                ¿Cómo calificarían esta película? (1-10)
+              </p>
+            </div>
+
+            {/* Jacqui Rating */}
+            <div className="space-y-2">
+              <Label className="font-medium text-pink-600">Valoración de Jacqui</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-4">1</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  value={jacquiRating}
+                  onChange={(e) => setJacquiRating(Number(e.target.value))}
+                  className="flex-1 h-2 bg-pink-200 rounded-lg appearance-none cursor-pointer slider-pink"
+                />
+                <span className="text-sm text-gray-500 w-6">10</span>
+                <div className="w-12 text-center">
+                  <Badge variant="outline" className="border-pink-200 text-pink-700 bg-pink-50">
+                    {jacquiRating > 0 ? jacquiRating.toFixed(1) : "-"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* Maxi Rating */}
+            <div className="space-y-2">
+              <Label className="font-medium text-blue-600">Valoración de Maxi</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-4">1</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  value={maxiRating}
+                  onChange={(e) => setMaxiRating(Number(e.target.value))}
+                  className="flex-1 h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer slider-blue"
+                />
+                <span className="text-sm text-gray-500 w-6">10</span>
+                <div className="w-12 text-center">
+                  <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">
+                    {maxiRating > 0 ? maxiRating.toFixed(1) : "-"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setRatingDialogOpen(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleRatingSubmit}
+                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+              >
+                Guardar y marcar como vista
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Progress Bar */}
       <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
         <CardContent className="p-4">
@@ -652,8 +828,8 @@ export default function MoviesTracker() {
                 : "Intentá ajustar los filtros para encontrar lo que buscás"}
             </p>
             {movies.length > 0 && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={clearFilters}
                 className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
               >
@@ -665,117 +841,44 @@ export default function MoviesTracker() {
       ) : (
         <div className="space-y-3">
           {filteredMovies.map((movie) => (
-            <Card 
-              key={movie.id} 
+            <Card
+              key={movie.id}
               className={`${movie.watched ? "bg-green-50 border-green-200" : "bg-white hover:bg-purple-50/50 hover:border-purple-200"} group border border-gray-200 transition-colors duration-200`}
             >
-                              <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <Checkbox checked={movie.watched} onCheckedChange={() => toggleWatched(movie)} className="mt-1" />
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className={`font-semibold ${movie.watched ? "line-through text-gray-600" : "text-gray-800"}`}>
-                          {movie.title}
-                        </h3>
-                        {movie.year && (
-                          <Badge 
-                            variant="outline" 
-                            className="border-gray-300 text-gray-600 bg-gray-50"
-                          >
-                            {movie.year}
-                          </Badge>
-                        )}
-                        {movie.watched && <Check className="w-4 h-4 text-green-600" />}
-                      </div>
-
-                      {movie.notes && <p className="text-sm text-gray-600">{movie.notes}</p>}
-
-                    {/* Watch Date */}
-                    {movie.watch_date && (
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4 text-purple-500" />
-                        <span className="text-sm text-purple-600 font-medium">
-                          {new Date(movie.watch_date).toLocaleDateString("es-ES", {
-                            weekday: "long",
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </span>
-                      </div>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-start items-center justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Checkbox
+                      checked={movie.watched}
+                      onCheckedChange={() => toggleWatched(movie)}
+                      className="mt-0 flex-shrink-0"
+                    />
+                    <h3 className={`font-semibold text-base sm:text-lg leading-tight ${movie.watched ? "line-through text-gray-600" : "text-gray-800"}`}>
+                      {movie.title}
+                    </h3>
+                    {movie.year && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs border-gray-300 text-gray-600 bg-gray-50 flex-shrink-0"
+                      >
+                        {movie.year}
+                      </Badge>
                     )}
-
-                    {/* Tags Display */}
-                    {movie.tags && movie.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {movie.tags.map((tag) => (
-                          <Badge 
-                            key={tag.id} 
-                            variant="outline" 
-                            className="text-xs flex items-center gap-1 px-2 py-1 border-purple-200 text-purple-700 bg-purple-50"
-                          >
-                            <span className="text-sm">{tag.icon}</span>
-                            <span>{tag.name}</span>
-                            {tag.parent_name && <span className="text-gray-500">({tag.parent_name})</span>}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Photo Display cuando showPhotos es true */}
-                    {movie.photos && movie.photos.length > 0 && showPhotos && (
-                      <div>
-                        <PhotoGallery
-                          photos={movie.photos}
-                          onPhotosChange={loadMovies}
-                          onAddPhoto={() => openPhotoUpload(movie.id)}
-                        />
-                      </div>
-                    )}
-
-                                        <div className="flex gap-2 pt-1">
-                      {/* Botón de fotos cuando showPhotos es false */}
-                      {movie.photos && movie.photos.length > 0 && !showPhotos && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openPhotoViewer(movie)}
-                          className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 hover:border-purple-300 shadow-sm"
-                        >
-                          <Images className="w-4 h-4" />
-                          <span>
-                            {movie.photos.length} {movie.photos.length === 1 ? "foto" : "fotos"}
-                          </span>
-                        </Button>
-                      )}
-                      
-                      {movie.disney_plus_link && (
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          asChild
-                          className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 shadow-sm"
-                        >
-                          <a href={movie.disney_plus_link} target="_blank" rel="noopener noreferrer">
-                            <Play className="w-3 h-3 mr-1" />
-                            {movie.disney_plus_link.includes('justwatch.com') ? 'JustWatch' :
-                              movie.disney_plus_link.includes('disneyplus.com') ? 'Disney+' :
-                                'Ver online'}
-                            <ExternalLink className="w-3 h-3 ml-1" />
-                          </a>
-                        </Button>
-                      )}
-                    </div>
                   </div>
                   <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity text-purple-600 hover:text-purple-700 hover:bg-purple-50 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
+                        className="h-4 w-8 p-0 mr-2 ml-2 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition-opacity text-purple-600 hover:text-purple-700 hover:bg-purple-50 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
                         aria-label={`Opciones para ${movie.title}`}
                       >
-                        <MoreHorizontal className="w-4 h-4" />
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${getPriorityColor(movie.priority)}`}
+                        >
+                          {getPriorityLabel(movie.priority)}
+                        </Badge>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" side="bottom" sideOffset={4}>
@@ -797,6 +900,109 @@ export default function MoviesTracker() {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                </div>
+                {/* Ratings Section */}
+                {(movie.imdb_score || movie.jacqui_rating || movie.maxi_rating) && (
+                  <div className="flex items-center gap-2 flex-wrap mb-3">
+                    {movie.imdb_score && (
+                      <Badge variant="outline" className="text-xs border-amber-200 text-amber-700 bg-amber-50">
+                        ⭐ {movie.imdb_score.toFixed(1)}
+                      </Badge>
+                    )}
+                    {movie.jacqui_rating && (
+                      <Badge variant="outline" className="text-xs border-pink-200 text-pink-700 bg-pink-50">
+                        💖 J: {movie.jacqui_rating.toFixed(1)}
+                      </Badge>
+                    )}
+                    {movie.maxi_rating && (
+                      <Badge variant="outline" className="text-xs border-blue-200 text-blue-700 bg-blue-50">
+                        🎬 M: {movie.maxi_rating.toFixed(1)}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+
+                {/* Notas */}
+                {movie.notes && (
+                  <p className="text-sm text-gray-600 mb-3 leading-relaxed">{movie.notes}</p>
+                )}
+
+                {/* Watch Date */}
+                {movie.watch_date && (
+                  <div className="flex items-center gap-1 mb-3">
+                    <Calendar className="w-4 h-4 text-purple-500" />
+                    <span className="text-sm text-purple-600 font-medium">
+                      {new Date(movie.watch_date).toLocaleDateString("es-ES", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                )}
+
+                {/* Tags Display */}
+                {movie.tags && movie.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {movie.tags.map((tag) => (
+                      <Badge
+                        key={tag.id}
+                        variant="outline"
+                        className="text-xs flex items-center gap-1 px-2 py-1 border-purple-200 text-purple-700 bg-purple-50"
+                      >
+                        <span className="text-sm">{tag.icon}</span>
+                        <span>{tag.name}</span>
+                        {tag.parent_name && <span className="text-gray-500">({tag.parent_name})</span>}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+
+                {/* Photo Display cuando showPhotos es true */}
+                {movie.photos && movie.photos.length > 0 && showPhotos && (
+                  <div className="mb-3">
+                    <PhotoGallery
+                      photos={movie.photos}
+                      onPhotosChange={loadMovies}
+                      onAddPhoto={() => openPhotoUpload(movie.id)}
+                    />
+                  </div>
+                )}
+
+                {/* Botones de acción */}
+                <div className="flex gap-2 pt-1">
+                  {/* Botón de fotos cuando showPhotos es false */}
+                  {movie.photos && movie.photos.length > 0 && !showPhotos && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openPhotoViewer(movie)}
+                      className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 hover:border-purple-300 shadow-sm"
+                    >
+                      <Images className="w-4 h-4" />
+                      <span>
+                        {movie.photos.length} {movie.photos.length === 1 ? "foto" : "fotos"}
+                      </span>
+                    </Button>
+                  )}
+
+                  {movie.disney_plus_link && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      asChild
+                      className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 shadow-sm"
+                    >
+                      <a href={movie.disney_plus_link} target="_blank" rel="noopener noreferrer">
+                        <Play className="w-3 h-3 mr-1" />
+                        {movie.disney_plus_link.includes('justwatch.com') ? 'JustWatch' :
+                          movie.disney_plus_link.includes('disneyplus.com') ? 'Disney+' :
+                            'Ver online'}
+                        <ExternalLink className="w-3 h-3 ml-1" />
+                      </a>
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

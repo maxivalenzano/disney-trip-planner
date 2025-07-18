@@ -57,6 +57,10 @@ export interface Movie {
   notes?: string
   rating?: number
   watch_date?: string
+  priority: "high" | "medium" | "low"
+  imdb_score?: number
+  jacqui_rating?: number
+  maxi_rating?: number
   created_at: string
   updated_at: string
   tags?: Tag[]
@@ -555,7 +559,7 @@ export const updateMovieTags = async (movieId: string, tagIds: string[]) => {
 
 // Funciones para Tasks
 export const getTasks = async () => {
-  const { data, error } = await supabase.from("tasks").select("*").order("due_date", { nullsLast: true })
+  const { data, error } = await supabase.from("tasks").select("*").order("due_date", { nullsFirst: false })
 
   if (error) {
     console.error("Error fetching tasks:", error)

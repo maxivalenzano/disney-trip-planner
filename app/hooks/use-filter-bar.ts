@@ -8,8 +8,8 @@ interface UseFilterBarProps {
   onFilterTagsChange: (tags: string[]) => void
   statusFilter: string
   onStatusFilterChange: (status: string) => void
-  sortByDate: string
-  onSortByDateChange: (sort: string) => void
+  sortBy: string
+  onSortByChange: (sort: string) => void
   
   // Display options
   showPhotos?: boolean
@@ -34,8 +34,8 @@ export function useFilterBar(props: UseFilterBarProps) {
     onFilterTagsChange,
     statusFilter,
     onStatusFilterChange,
-    sortByDate,
-    onSortByDateChange,
+    sortBy,
+    onSortByChange,
     showPhotos,
     onShowPhotosChange,
     allTags,
@@ -48,7 +48,7 @@ export function useFilterBar(props: UseFilterBarProps) {
     onSearchChange("")
     onFilterTagsChange([])
     onStatusFilterChange("all")
-    onSortByDateChange("none")
+    onSortByChange(type === "movies" ? "priority" : "none")
   }
 
   const getFilteredTagsForDisplay = () => {
@@ -59,7 +59,7 @@ export function useFilterBar(props: UseFilterBarProps) {
     (searchTerm ? 1 : 0) + 
     selectedFilterTags.length + 
     (statusFilter !== "all" ? 1 : 0) + 
-    (sortByDate !== "none" ? 1 : 0)
+    (sortBy !== "none" && (type !== "movies" || sortBy !== "priority") ? 1 : 0)
 
   const hasActiveFilters = activeFiltersCount > 0
 
@@ -78,9 +78,13 @@ export function useFilterBar(props: UseFilterBarProps) {
 
   const sortConfigs = {
     movies: {
-      label: "Ordenar por fecha para ver",
-      ascLabel: "Más próximas",
-      descLabel: "Más lejanas",
+      label: "Ordenar películas",
+      options: [
+        { value: "priority", label: "Por prioridad" },
+        { value: "imdb_desc", label: "Por puntaje IMDB" },
+        { value: "date_asc", label: "Fecha más próxima" },
+        { value: "date_desc", label: "Fecha más lejana" },
+      ]
     },
     tasks: {
       label: "Ordenar por fecha límite",
@@ -114,8 +118,8 @@ export function useFilterBar(props: UseFilterBarProps) {
     onFilterTagsChange,
     statusFilter,
     onStatusFilterChange,
-    sortByDate,
-    onSortByDateChange,
+    sortBy,
+    onSortByChange,
     showPhotos,
     onShowPhotosChange,
     allTags,

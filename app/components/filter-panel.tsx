@@ -28,8 +28,8 @@ interface FilterPanelProps {
   onFilterTagsChange: (tags: string[]) => void
   statusFilter: string
   onStatusFilterChange: (status: string) => void
-  sortByDate: string
-  onSortByDateChange: (sort: string) => void
+  sortBy: string
+  onSortByChange: (sort: string) => void
   showPhotos?: boolean
   onShowPhotosChange?: (show: boolean) => void
   allTags: any[]
@@ -53,8 +53,8 @@ export default function FilterPanel(props: FilterPanelProps) {
     onFilterTagsChange,
     statusFilter,
     onStatusFilterChange,
-    sortByDate,
-    onSortByDateChange,
+    sortBy,
+    onSortByChange,
     showPhotos,
     onShowPhotosChange,
     type,
@@ -70,10 +70,10 @@ export default function FilterPanel(props: FilterPanelProps) {
           <div className="flex items-center justify-between">
             <h3 className="font-medium text-gray-700">Filtros</h3>
             {hasActiveFilters && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={clearFilters} 
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
                 className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
               >
                 <X className="w-4 h-4 mr-1" />
@@ -123,9 +123,9 @@ export default function FilterPanel(props: FilterPanelProps) {
             {selectedFilterTags.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {getFilteredTagsForDisplay().map((tag) => (
-                  <Badge 
-                    key={tag.id} 
-                    variant="secondary" 
+                  <Badge
+                    key={tag.id}
+                    variant="secondary"
                     className="text-xs flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 border-purple-200"
                   >
                     <span className="text-sm">{tag.icon}</span>
@@ -143,12 +143,12 @@ export default function FilterPanel(props: FilterPanelProps) {
             <div className="flex gap-2">
               {Object.entries(statusConfig).map(([key, config]) => {
                 const isActive = statusFilter === key
-                
+
                 let Icon: any
                 if (key === "all") Icon = type === "movies" ? Film : CheckSquare
                 else if (key === "watched" || key === "completed") Icon = Check
                 else Icon = type === "movies" ? Play : Clock
-                
+
                 let buttonClass = ""
                 if (isActive) {
                   if (config.color === "purple") buttonClass = "bg-purple-600 text-white hover:bg-purple-700"
@@ -159,7 +159,7 @@ export default function FilterPanel(props: FilterPanelProps) {
                   else if (config.color === "green") buttonClass = "border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
                   else if (config.color === "orange") buttonClass = "border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
                 }
-                
+
                 return (
                   <Button
                     key={key}
@@ -176,50 +176,85 @@ export default function FilterPanel(props: FilterPanelProps) {
             </div>
           </div>
 
-          {/* Sort by Date Filter */}
+          {/* Sort Filter */}
           <div>
             <Label className="text-sm font-medium text-gray-700 mb-2 block">{sortConfig.label}</Label>
-            <div className="flex gap-2">
-              <Button
-                variant={sortByDate === "none" ? "default" : "outline"}
-                size="sm"
-                onClick={() => onSortByDateChange("none")}
-                className={sortByDate === "none" 
-                  ? "bg-purple-600 text-white hover:bg-purple-700" 
-                  : "border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
-                }
-              >
-                Sin orden
-              </Button>
-              <Button
-                variant={sortByDate === "asc" ? "default" : "outline"}
-                size="sm"
-                onClick={() => onSortByDateChange("asc")}
-                className={sortByDate === "asc" 
-                  ? "bg-blue-600 text-white hover:bg-blue-700" 
-                  : "border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
-                }
-              >
-                <Calendar className="w-4 h-4 mr-1" />
-                {sortConfig.ascLabel}
-              </Button>
-              <Button
-                variant={sortByDate === "desc" ? "default" : "outline"}
-                size="sm"
-                onClick={() => onSortByDateChange("desc")}
-                className={sortByDate === "desc" 
-                  ? "bg-indigo-600 text-white hover:bg-indigo-700" 
-                  : "border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300"
-                }
-              >
-                <Calendar className="w-4 h-4 mr-1" />
-                {sortConfig.descLabel}
-              </Button>
+            <div className="flex flex-wrap gap-2">
+              {type === "movies" && "options" in sortConfig ? (
+                <>
+                  <Button
+                    variant={sortBy === "none" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onSortByChange("none")}
+                    className={sortBy === "none"
+                      ? "bg-purple-600 text-white hover:bg-purple-700"
+                      : "border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+                    }
+                  >
+                    Sin orden
+                  </Button>
+                  {sortConfig.options.map((option) => (
+                    <Button
+                      key={option.value}
+                      variant={sortBy === option.value ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => onSortByChange(option.value)}
+                      className={sortBy === option.value
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : "border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
+                      }
+                    >
+                      {option.value === "priority" && "🎯"}
+                      {option.value === "imdb_desc" && "⭐"}
+                      {option.value.includes("date") && <Calendar className="w-4 h-4 mr-1" />}
+                      {option.label}
+                    </Button>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant={sortBy === "none" ? "default" : "outline"}
+                    size="sm"
+                      onClick={() => onSortByChange("none")}
+                      className={sortBy === "none"
+                        ? "bg-purple-600 text-white hover:bg-purple-700"
+                        : "border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+                      }
+                    >
+                      Sin orden
+                    </Button>
+                    <Button
+                      variant={sortBy === "date_asc" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => onSortByChange("date_asc")}
+                      className={sortBy === "date_asc"
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : "border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
+                      }
+                    >
+                      <Calendar className="w-4 h-4 mr-1" />
+                      {"ascLabel" in sortConfig ? sortConfig.ascLabel : "Más próximas"}
+                    </Button>
+                    <Button
+                      variant={sortBy === "date_desc" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => onSortByChange("date_desc")}
+                      className={sortBy === "date_desc"
+                        ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                        : "border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300"
+                      }
+                    >
+                      <Calendar className="w-4 h-4 mr-1" />
+                      {"descLabel" in sortConfig ? sortConfig.descLabel : "Más lejanas"}
+                    </Button>
+                </>
+              )}
             </div>
           </div>
 
           {/* Active Filters Display */}
-          {(searchTerm || statusFilter !== "all" || sortByDate !== "none") && (
+          {(searchTerm || statusFilter !== "all" || (sortBy !== "none" && (type !== "movies" || sortBy !== "priority"))) && (
             <div className="pt-2 border-t">
               <div className="flex flex-wrap gap-2 items-center">
                 <span className="text-sm text-gray-600">Filtros activos:</span>
@@ -230,11 +265,10 @@ export default function FilterPanel(props: FilterPanelProps) {
                   </Badge>
                 )}
                 {statusFilter !== "all" && (
-                  <Badge variant="secondary" className={`flex items-center gap-1 ${
-                    statusFilter === "watched" || statusFilter === "completed"
-                      ? "bg-green-100 text-green-700" 
+                  <Badge variant="secondary" className={`flex items-center gap-1 ${statusFilter === "watched" || statusFilter === "completed"
+                    ? "bg-green-100 text-green-700"
                       : "bg-orange-100 text-orange-700"
-                  }`}>
+                    }`}>
                     {statusFilter === "watched" || statusFilter === "completed" ? (
                       <Check className="w-3 h-3" />
                     ) : statusFilter === "unwatched" || statusFilter === "pending" ? (
@@ -246,15 +280,19 @@ export default function FilterPanel(props: FilterPanelProps) {
                     <X className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => onStatusFilterChange("all")} />
                   </Badge>
                 )}
-                {sortByDate !== "none" && (
-                  <Badge variant="secondary" className={`flex items-center gap-1 ${
-                    sortByDate === "asc" 
-                      ? "bg-blue-100 text-blue-700" 
+                {sortBy !== "none" && (type !== "movies" || sortBy !== "priority") && (
+                  <Badge variant="secondary" className={`flex items-center gap-1 ${sortBy === "date_asc" || sortBy === "priority"
+                    ? "bg-blue-100 text-blue-700"
                       : "bg-indigo-100 text-indigo-700"
-                  }`}>
-                    <Calendar className="w-3 h-3" />
-                    {sortByDate === "asc" ? sortConfig.ascLabel : sortConfig.descLabel}
-                    <X className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => onSortByDateChange("none")} />
+                    }`}>
+                    {sortBy === "priority" && "🎯"}
+                    {sortBy === "imdb_desc" && "⭐"}
+                    {sortBy.includes("date") && <Calendar className="w-3 h-3" />}
+                    {sortBy === "priority" && "Por prioridad"}
+                    {sortBy === "imdb_desc" && "Por puntaje IMDB"}
+                    {sortBy === "date_asc" && (type === "movies" ? "Fecha más próxima" : ("ascLabel" in sortConfig ? sortConfig.ascLabel : "Más próximas"))}
+                    {sortBy === "date_desc" && (type === "movies" ? "Fecha más lejana" : ("descLabel" in sortConfig ? sortConfig.descLabel : "Más lejanas"))}
+                    <X className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => onSortByChange(type === "movies" ? "priority" : "none")} />
                   </Badge>
                 )}
               </div>

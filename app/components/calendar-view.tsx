@@ -282,14 +282,13 @@ export default function CalendarView() {
                 <div
                   key={index}
                   className={`min-h-[80px] p-1 border-r border-b cursor-pointer transition-colors duration-200 ${day ? "bg-white hover:bg-purple-50/50" : "bg-gray-50"
-                  } ${isToday ? "bg-blue-50" : ""} ${isSelected ? "bg-purple-50 ring-2 ring-purple-300" : ""}`}
+                    } ${isToday ? "bg-blue-50" : ""} ${isSelected ? "bg-purple-50 ring-2 ring-purple-300" : ""}`}
                   onClick={() => handleDayClick(day)}
                 >
                   {day && (
                     <>
-                      <div className={`text-sm font-medium mb-1 flex items-center justify-between ${
-                        isToday ? "text-blue-600" : "text-gray-900"
-                      } ${isSelected ? "text-purple-700" : ""}`}>
+                      <div className={`text-sm font-medium mb-1 flex items-center justify-between ${isToday ? "text-blue-600" : "text-gray-900"
+                        } ${isSelected ? "text-purple-700" : ""}`}>
                         <span>{day}</span>
                         {hasEvents && (
                           <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center shadow-sm">
@@ -361,12 +360,12 @@ export default function CalendarView() {
                             </Badge>
                           )}
                         </div>
-                        
+
                         {event.description && (
                           <p className="text-sm text-gray-600">{event.description}</p>
                         )}
-                        
-                        <div className="flex items-center gap-4 text-sm text-gray-500 pt-1">                          
+
+                        <div className="flex items-center gap-4 text-sm text-gray-500 pt-1">
                           {event.disney_plus_link && (
                             <Button
                               variant="outline"
@@ -375,7 +374,9 @@ export default function CalendarView() {
                               className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 shadow-sm"
                             >
                               <a href={event.disney_plus_link} target="_blank" rel="noopener noreferrer">
-                                Ver en Disney+
+                                {event.disney_plus_link.includes('justwatch.com') ? 'JustWatch' :
+                                  event.disney_plus_link.includes('disneyplus.com') ? 'Disney+' :
+                                    'Ver online'}
                                 <ExternalLink className="w-3 h-3 ml-1" />
                               </a>
                             </Button>

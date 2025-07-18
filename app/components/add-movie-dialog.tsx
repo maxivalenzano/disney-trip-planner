@@ -26,6 +26,8 @@ export default function AddMovieDialog({ open, onOpenChange, onMovieAdded }: Add
     disney_plus_link: "",
     notes: "",
     watch_date: "",
+    priority: "medium" as "high" | "medium" | "low",
+    imdb_score: undefined as number | undefined,
   })
   
   const [selectedTags, setSelectedTags] = useState<string[]>([])
@@ -41,6 +43,8 @@ export default function AddMovieDialog({ open, onOpenChange, onMovieAdded }: Add
       disney_plus_link: "",
       notes: "",
       watch_date: "",
+      priority: "medium",
+      imdb_score: undefined,
     })
     setSelectedTags([])
   }
@@ -49,12 +53,14 @@ export default function AddMovieDialog({ open, onOpenChange, onMovieAdded }: Add
     title: string
     year: number
     justwatch_link: string
+    imdb_score?: number
   }) => {
     setNewMovie({
       ...newMovie,
       title: movie.title,
       year: movie.year,
       disney_plus_link: movie.justwatch_link,
+      imdb_score: movie.imdb_score,
     })
   }
 
@@ -77,6 +83,8 @@ export default function AddMovieDialog({ open, onOpenChange, onMovieAdded }: Add
         disney_plus_link: newMovie.disney_plus_link || undefined,
         notes: newMovie.notes || undefined,
         watch_date: newMovie.watch_date || undefined,
+        priority: newMovie.priority,
+        imdb_score: newMovie.imdb_score,
       })
 
       // Update tags if any selected
@@ -175,18 +183,35 @@ export default function AddMovieDialog({ open, onOpenChange, onMovieAdded }: Add
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="watchDate" className="text-base sm:text-sm font-medium">
-                  Fecha para ver (opcional)
+                <Label htmlFor="priority" className="text-base sm:text-sm font-medium">
+                  Prioridad
                 </Label>
-                <Input
-                  id="watchDate"
-                  type="date"
-                  value={newMovie.watch_date}
-                  onChange={(e) => setNewMovie({ ...newMovie, watch_date: e.target.value })}
+                <select
+                  id="priority"
+                  value={newMovie.priority}
+                  onChange={(e) => setNewMovie({ ...newMovie, priority: e.target.value as "high" | "medium" | "low" })}
                   disabled={creating}
-                  className="text-base sm:text-sm h-11 sm:h-10"
-                />
+                  className="flex h-11 sm:h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm ring-offset-background placeholder:text-muted-foreground focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                >
+                  <option value="high">Alta</option>
+                  <option value="medium">Media</option>
+                  <option value="low">Baja</option>
+                </select>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="watchDate" className="text-base sm:text-sm font-medium">
+                Fecha para ver (opcional)
+              </Label>
+              <Input
+                id="watchDate"
+                type="date"
+                value={newMovie.watch_date}
+                onChange={(e) => setNewMovie({ ...newMovie, watch_date: e.target.value })}
+                disabled={creating}
+                className="text-base sm:text-sm h-11 sm:h-10"
+              />
             </div>
 
             <div className="space-y-2">

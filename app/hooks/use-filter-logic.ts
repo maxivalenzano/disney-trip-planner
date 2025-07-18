@@ -10,6 +10,8 @@ interface FilterableItem {
   due_date?: string
   watched?: boolean
   completed?: boolean
+  priority?: "high" | "medium" | "low"
+  imdb_score?: number
 }
 
 interface UseFilterLogicProps<T extends FilterableItem> {
@@ -21,7 +23,7 @@ export function useFilterLogic<T extends FilterableItem>({ items, type }: UseFil
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedFilterTags, setSelectedFilterTags] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState("all")
-  const [sortByDate, setSortByDate] = useState<string>("none")
+  const [sortBy, setSortBy] = useState<string>(type === "movies" ? "priority" : "none")
   const [showPhotos, setShowPhotos] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [filteredItems, setFilteredItems] = useState<T[]>([])
@@ -65,34 +67,62 @@ export function useFilterLogic<T extends FilterableItem>({ items, type }: UseFil
       }
     }
 
-    // Sort by date
-    if (sortByDate !== "none") {
+    // Sort items
+    if (sortBy !== "none") {
       filtered = filtered.sort((a, b) => {
-        const dateA = type === "movies" 
-          ? (a.watch_date ? new Date(a.watch_date).getTime() : 0)
-          : (a.due_date ? new Date(a.due_date).getTime() : 0)
-        const dateB = type === "movies" 
-          ? (b.watch_date ? new Date(b.watch_date).getTime() : 0)
-          : (b.due_date ? new Date(b.due_date).getTime() : 0)
-        
-        if (sortByDate === "asc") {
-          // Sin fecha al final
-          const aHasDate = type === "movies" ? !!a.watch_date : !!a.due_date
-          const bHasDate = type === "movies" ? !!b.watch_date : !!b.due_date
-          
-          if (!aHasDate && !bHasDate) return 0
-          if (!aHasDate) return 1
-          if (!bHasDate) return -1
-          return dateA - dateB
-        } else {
-          // Sin fecha al final
-          const aHasDate = type === "movies" ? !!a.watch_date : !!a.due_date
-          const bHasDate = type === "movies" ? !!b.watch_date : !!b.due_date
-          
-          if (!aHasDate && !bHasDate) return 0
-          if (!aHasDate) return 1
-          if (!bHasDate) return -1
-          return dateB - dateA
+        switch (sortBy) {
+          case "priority":
+            if (type === "movies") {
+              const priorityOrder = { high: 0, medium: 1, low: 2 }
+              const aPriority = a.priority || "medium"
+              const bPriority = b.priority || "medium"
+              return priorityOrder[aPriority] - priorityOrder[bPriority]
+            }
+            return 0
+            
+          case "imdb_desc":
+            if (type === "movies") {
+              const aScore = a.imdb_score || 0
+              const bScore = b.imdb_score || 0
+              // Sin puntaje al final
+              if (aScore === 0 && bScore === 0) return 0
+              if (aScore === 0) return 1
+              if (bScore === 0) return -1
+              return bScore - aScore
+            }
+            return 0
+            
+          case "date_asc":
+          case "date_desc":
+            const dateA = type === "movies" 
+              ? (a.watch_date ? new Date(a.watch_date).getTime() : 0)
+              : (a.due_date ? new Date(a.due_date).getTime() : 0)
+            const dateB = type === "movies" 
+              ? (b.watch_date ? new Date(b.watch_date).getTime() : 0)
+              : (b.due_date ? new Date(b.due_date).getTime() : 0)
+            
+            if (sortBy === "date_asc") {
+              // Sin fecha al final
+              const aHasDate = type === "movies" ? !!a.watch_date : !!a.due_date
+              const bHasDate = type === "movies" ? !!b.watch_date : !!b.due_date
+              
+              if (!aHasDate && !bHasDate) return 0
+              if (!aHasDate) return 1
+              if (!bHasDate) return -1
+              return dateA - dateB
+            } else {
+              // Sin fecha al final
+              const aHasDate = type === "movies" ? !!a.watch_date : !!a.due_date
+              const bHasDate = type === "movies" ? !!b.watch_date : !!b.due_date
+              
+              if (!aHasDate && !bHasDate) return 0
+              if (!aHasDate) return 1
+              if (!bHasDate) return -1
+              return dateB - dateA
+            }
+            
+          default:
+            return 0
         }
       })
     }
@@ -104,20 +134,20 @@ export function useFilterLogic<T extends FilterableItem>({ items, type }: UseFil
     setSearchTerm("")
     setSelectedFilterTags([])
     setStatusFilter("all")
-    setSortByDate("none")
+    setSortBy(type === "movies" ? "priority" : "none")
   }
 
   // Re-filter when items or filters change
   useEffect(() => {
     filterItems()
-  }, [items, searchTerm, selectedFilterTags, statusFilter, sortByDate, type])
+  }, [items, searchTerm, selectedFilterTags, statusFilter, sortBy, type])
 
   return {
     // States
     searchTerm,
     selectedFilterTags,
     statusFilter,
-    sortByDate,
+    sortBy,
     showPhotos,
     showFilters,
     filteredItems,
@@ -126,7 +156,7 @@ export function useFilterLogic<T extends FilterableItem>({ items, type }: UseFil
     setSearchTerm,
     setSelectedFilterTags,
     setStatusFilter,
-    setSortByDate,
+    setSortBy,
     setShowPhotos,
     setShowFilters,
     clearFilters,

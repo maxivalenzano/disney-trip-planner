@@ -18,6 +18,7 @@ interface JustWatchSearchProps {
     title: string
     year: number
     justwatch_link: string
+    imdb_score?: number
   }) => void
 }
 
@@ -77,6 +78,7 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
       title: movie.title,
       year: movie.original_release_year || new Date().getFullYear(),
       justwatch_link: movie.justwatch_url,
+      imdb_score: movie.imdb_score,
     })
     
     onOpenChange(false)
