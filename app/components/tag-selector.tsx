@@ -20,6 +20,7 @@ interface TagSelectorProps {
 export default function TagSelector({ selectedTags, onTagsChange, open, onOpenChange, title = "Seleccionar Etiquetas" }: TagSelectorProps) {
   const [tagsGrouped, setTagsGrouped] = useState<{ [key: string]: TagType[] }>({})
   const [expandedParks, setExpandedParks] = useState<Set<string>>(new Set())
+  const [expandedLands, setExpandedLands] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -34,15 +35,32 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
       const grouped = await getTagsGrouped()
       setTagsGrouped(grouped)
 
-      // Auto-expand parks that have selected attractions
-      const newExpanded = new Set<string>()
+      // Auto-expand parks and lands that have selected items
+      const newExpandedParks = new Set<string>()
+      const newExpandedLands = new Set<string>()
+      
       Object.entries(grouped).forEach(([parkId, tags]) => {
-        const hasSelectedAttraction = tags.some((tag) => tag.type === "attraction" && selectedTags.includes(tag.id))
-        if (hasSelectedAttraction) {
-          newExpanded.add(parkId)
+        // Check if any tag in this park is selected
+        const hasSelectedTag = tags.some((tag) => selectedTags.includes(tag.id))
+        if (hasSelectedTag) {
+          newExpandedParks.add(parkId)
         }
+
+        // Check if any land in this park has selected attractions
+        tags.forEach((tag) => {
+          if (tag.type === "land") {
+            const landHasSelectedAttraction = tags.some(
+              (t) => t.type === "attraction" && t.parent_id === tag.id && selectedTags.includes(t.id)
+            )
+            if (landHasSelectedAttraction || selectedTags.includes(tag.id)) {
+              newExpandedLands.add(tag.id)
+            }
+          }
+        })
       })
-      setExpandedParks(newExpanded)
+      
+      setExpandedParks(newExpandedParks)
+      setExpandedLands(newExpandedLands)
     } catch (error) {
       console.error("Error loading tags:", error)
     } finally {
@@ -54,10 +72,28 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
     const newExpanded = new Set(expandedParks)
     if (newExpanded.has(parkId)) {
       newExpanded.delete(parkId)
+      // Also collapse all lands in this park
+      const landsInPark = Object.values(tagsGrouped).flat()
+        .filter(tag => tag.type === "land" && tag.parent_id === parkId)
+        .map(tag => tag.id)
+      
+      const newExpandedLands = new Set(expandedLands)
+      landsInPark.forEach(landId => newExpandedLands.delete(landId))
+      setExpandedLands(newExpandedLands)
     } else {
       newExpanded.add(parkId)
     }
     setExpandedParks(newExpanded)
+  }
+
+  const toggleLandExpansion = (landId: string) => {
+    const newExpanded = new Set(expandedLands)
+    if (newExpanded.has(landId)) {
+      newExpanded.delete(landId)
+    } else {
+      newExpanded.add(landId)
+    }
+    setExpandedLands(newExpanded)
   }
 
   const handleTagToggle = (tagId: string) => {
@@ -71,6 +107,39 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
   const getSelectedTagsInfo = () => {
     const allTags = Object.values(tagsGrouped).flat()
     return selectedTags.map((tagId) => allTags.find((tag) => tag.id === tagId)).filter(Boolean) as TagType[]
+  }
+
+  // Group tags by hierarchy: park -> lands -> attractions
+  const getHierarchicalTags = () => {
+    const result: { [parkId: string]: { 
+      park: TagType, 
+      lands: { [landId: string]: { land: TagType, attractions: TagType[] } } 
+    } } = {}
+
+    Object.entries(tagsGrouped).forEach(([parkId, tags]) => {
+      const park = tags.find(tag => tag.type === "park")
+      if (!park) return
+
+      result[parkId] = { park, lands: {} }
+
+      // Group lands and their attractions
+      tags.forEach(tag => {
+        if (tag.type === "land") {
+          result[parkId].lands[tag.id] = { land: tag, attractions: [] }
+        }
+      })
+
+      // Add attractions to their respective lands
+      tags.forEach(tag => {
+        if (tag.type === "attraction" && tag.parent_id) {
+          if (result[parkId].lands[tag.parent_id]) {
+            result[parkId].lands[tag.parent_id].attractions.push(tag)
+          }
+        }
+      })
+    })
+
+    return result
   }
 
   return (
@@ -90,7 +159,10 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
                 <div className="h-6 bg-gray-200 rounded mb-2"></div>
                 <div className="ml-4 space-y-2">
                   <div className="h-4 bg-gray-100 rounded"></div>
-                  <div className="h-4 bg-gray-100 rounded"></div>
+                  <div className="ml-4 space-y-1">
+                    <div className="h-3 bg-gray-50 rounded"></div>
+                    <div className="h-3 bg-gray-50 rounded"></div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -98,12 +170,9 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
         ) : (
           <ScrollArea className="max-h-[400px]">
             <div className="space-y-2">
-              {Object.entries(tagsGrouped).map(([parkId, tags]) => {
-                const park = tags.find((tag) => tag.type === "park")
-                const attractions = tags.filter((tag) => tag.type === "attraction")
+              {Object.entries(getHierarchicalTags()).map(([parkId, parkData]) => {
                 const isExpanded = expandedParks.has(parkId)
-
-                if (!park) return null
+                const { park, lands } = parkData
 
                 return (
                   <div key={parkId} className="space-y-1">
@@ -128,25 +197,61 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
                       </label>
                     </div>
 
-                    {/* Attractions (Sub-tags) */}
-                    {isExpanded && attractions.length > 0 && (
+                    {/* Lands and Attractions */}
+                    {isExpanded && Object.keys(lands).length > 0 && (
                       <div className="ml-6 space-y-1">
-                        {attractions.map((attraction) => (
-                          <div
-                            key={attraction.id}
-                            className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50"
-                          >
-                            <Checkbox
-                              id={attraction.id}
-                              checked={selectedTags.includes(attraction.id)}
-                              onCheckedChange={() => handleTagToggle(attraction.id)}
-                            />
-                            <label htmlFor={attraction.id} className="flex items-center gap-2 cursor-pointer flex-1">
-                              <span className="text-sm">{attraction.icon}</span>
-                              <span className="text-sm">{attraction.name}</span>
-                            </label>
-                          </div>
-                        ))}
+                        {Object.entries(lands).map(([landId, landData]) => {
+                          const isLandExpanded = expandedLands.has(landId)
+                          const { land, attractions } = landData
+
+                          return (
+                            <div key={landId} className="space-y-1">
+                              {/* Land Tag */}
+                              <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="p-0 h-auto"
+                                  onClick={() => toggleLandExpansion(landId)}
+                                >
+                                  {isLandExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                                </Button>
+                                <Checkbox
+                                  id={land.id}
+                                  checked={selectedTags.includes(land.id)}
+                                  onCheckedChange={() => handleTagToggle(land.id)}
+                                />
+                                <label htmlFor={land.id} className="flex items-center gap-2 cursor-pointer flex-1">
+                                  <span className="text-base">{land.icon}</span>
+                                  <span className="text-sm font-medium">{land.name}</span>
+                                </label>
+                              </div>
+
+                              {/* Attractions in this Land */}
+                              {isLandExpanded && attractions.length > 0 && (
+                                <div className="ml-6 space-y-1">
+                                  {attractions.map((attraction) => (
+                                    <div
+                                      key={attraction.id}
+                                      className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50"
+                                    >
+                                      <div className="w-4" /> {/* Spacer for alignment */}
+                                      <Checkbox
+                                        id={attraction.id}
+                                        checked={selectedTags.includes(attraction.id)}
+                                        onCheckedChange={() => handleTagToggle(attraction.id)}
+                                      />
+                                      <label htmlFor={attraction.id} className="flex items-center gap-2 cursor-pointer flex-1">
+                                        <span className="text-sm">{attraction.icon}</span>
+                                        <span className="text-xs">{attraction.name}</span>
+                                      </label>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
                       </div>
                     )}
                   </div>
@@ -165,7 +270,12 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
                 <Badge key={tag.id} variant="secondary" className="text-xs flex items-center gap-1 px-2 py-1">
                   <span className="text-sm">{tag.icon}</span>
                   <span>{tag.name}</span>
-                  {tag.parent_name && <span className="text-gray-500">({tag.parent_name})</span>}
+                  {tag.type === "land" && tag.parent_name && (
+                    <span className="text-gray-500">({tag.parent_name})</span>
+                  )}
+                  {tag.type === "attraction" && tag.parent_name && (
+                    <span className="text-gray-500">({tag.parent_name})</span>
+                  )}
                 </Badge>
               ))}
             </div>
@@ -188,4 +298,4 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
       </DialogContent>
     </Dialog>
   )
-}
+} 

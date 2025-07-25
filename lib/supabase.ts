@@ -24,12 +24,23 @@ export interface Park {
   icon?: string
   color: string
   created_at: string
+  lands?: Land[]
+}
+
+export interface Land {
+  id: string
+  park_id: string
+  name: string
+  description?: string
+  icon?: string
+  color: string
+  created_at: string
   attractions?: Attraction[]
 }
 
 export interface Attraction {
   id: string
-  park_id: string
+  land_id: string
   name: string
   type: "ride" | "show" | "restaurant" | "shop"
   priority: "high" | "medium" | "low"
@@ -92,7 +103,7 @@ export interface Note {
 export interface Tag {
   id: string
   name: string
-  type: "park" | "attraction"
+  type: "park" | "land" | "attraction"
   parent_id?: string
   parent_name?: string
   icon?: string
@@ -130,7 +141,10 @@ export const getParks = async () => {
     .from("parks")
     .select(`
       *,
-      attractions (*)
+      lands (
+        *,
+        attractions (*)
+      )
     `)
     .order("created_at")
 
@@ -173,6 +187,61 @@ export const deletePark = async (id: string) => {
   }
 }
 
+// Funciones para Lands
+export const getLands = async (parkId?: string) => {
+  let query = supabase
+    .from("lands")
+    .select(`
+      *,
+      attractions (*)
+    `)
+    .order("created_at")
+
+  if (parkId) {
+    query = query.eq("park_id", parkId)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error("Error fetching lands:", error)
+    throw error
+  }
+
+  return data
+}
+
+export const createLand = async (landData: Omit<Land, "id" | "created_at">) => {
+  const { data, error } = await supabase.from("lands").insert(landData).select().single()
+
+  if (error) {
+    console.error("Error creating land:", error)
+    throw error
+  }
+
+  return data
+}
+
+export const updateLand = async (id: string, landData: Partial<Land>) => {
+  const { data, error } = await supabase.from("lands").update(landData).eq("id", id).select().single()
+
+  if (error) {
+    console.error("Error updating land:", error)
+    throw error
+  }
+
+  return data
+}
+
+export const deleteLand = async (id: string) => {
+  const { error } = await supabase.from("lands").delete().eq("id", id)
+
+  if (error) {
+    console.error("Error deleting land:", error)
+    throw error
+  }
+}
+
 // Funciones para Attractions
 export const createAttraction = async (attractionData: Omit<Attraction, "id" | "created_at">) => {
   const { data, error } = await supabase.from("attractions").insert(attractionData).select().single()
@@ -205,7 +274,7 @@ export const deleteAttraction = async (id: string) => {
   }
 }
 
-// Funciones para Tags (usando la nueva arquitectura)
+// Funciones para Tags (usando la nueva arquitectura con lands)
 export const getTagsGrouped = async () => {
   const { data, error } = await supabase.rpc("get_unified_tags_grouped")
 
@@ -214,7 +283,7 @@ export const getTagsGrouped = async () => {
     throw error
   }
 
-  // Transform the data into the expected format
+  // Transform the data into the expected format with 3-level hierarchy
   const grouped: { [key: string]: Tag[] } = {}
 
   data?.forEach((row: any) => {
@@ -235,17 +304,35 @@ export const getTagsGrouped = async () => {
       ]
     }
 
+    // Add land if exists and not already added
+    if (row.land_id) {
+      const landExists = grouped[parkId].some(tag => tag.id === row.land_id && tag.type === "land")
+      if (!landExists) {
+        grouped[parkId].push({
+          id: row.land_id,
+          name: row.land_name,
+          type: "land" as const,
+          parent_id: row.park_id,
+          parent_name: row.park_name,
+          icon: row.land_icon,
+          color: row.land_color,
+          full_path: `${row.park_name} → ${row.land_name}`,
+          created_at: new Date().toISOString(),
+        })
+      }
+    }
+
     // Add attraction if exists
     if (row.attraction_id) {
       grouped[parkId].push({
         id: row.attraction_id,
         name: row.attraction_name,
         type: "attraction" as const,
-        parent_id: row.park_id,
-        parent_name: row.park_name,
+        parent_id: row.land_id,
+        parent_name: row.land_name,
         icon: row.attraction_icon,
         color: row.attraction_color,
-        full_path: `${row.park_name} → ${row.attraction_name}`,
+        full_path: `${row.park_name} → ${row.land_name} → ${row.attraction_name}`,
         created_at: new Date().toISOString(),
       })
     }
@@ -521,15 +608,17 @@ export const updateMoviePhotoCaption = async (photoId: string, caption: string) 
   return data
 }
 
-// Funciones para Movie Tags (nueva arquitectura)
+// Funciones para Movie Tags (nueva arquitectura con lands)
 export const updateMovieTags = async (movieId: string, tagIds: string[]) => {
-  // Separate park IDs and attraction IDs
+  // Separate park IDs, land IDs, and attraction IDs
   const { data: allTags } = await supabase.from("unified_tags").select("*")
   const parkIds = tagIds.filter((id) => allTags?.find((tag) => tag.id === id && tag.type === "park"))
+  const landIds = tagIds.filter((id) => allTags?.find((tag) => tag.id === id && tag.type === "land"))
   const attractionIds = tagIds.filter((id) => allTags?.find((tag) => tag.id === id && tag.type === "attraction"))
 
   // Delete existing tags
   await supabase.from("movie_park_tags").delete().eq("movie_id", movieId)
+  await supabase.from("movie_land_tags").delete().eq("movie_id", movieId)
   await supabase.from("movie_attraction_tags").delete().eq("movie_id", movieId)
 
   // Insert new park tags
@@ -541,6 +630,18 @@ export const updateMovieTags = async (movieId: string, tagIds: string[]) => {
     if (parkError) {
       console.error("Error updating movie park tags:", parkError)
       throw parkError
+    }
+  }
+
+  // Insert new land tags
+  if (landIds.length > 0) {
+    const { error: landError } = await supabase
+      .from("movie_land_tags")
+      .insert(landIds.map((landId) => ({ movie_id: movieId, land_id: landId })))
+
+    if (landError) {
+      console.error("Error updating movie land tags:", landError)
+      throw landError
     }
   }
 
@@ -616,15 +717,17 @@ export const deleteTask = async (id: string) => {
   }
 }
 
-// Funciones para Task Tags (nueva arquitectura)
+// Funciones para Task Tags (nueva arquitectura con lands)
 export const updateTaskTags = async (taskId: string, tagIds: string[]) => {
-  // Separate park IDs and attraction IDs
+  // Separate park IDs, land IDs, and attraction IDs
   const { data: allTags } = await supabase.from("unified_tags").select("*")
   const parkIds = tagIds.filter((id) => allTags?.find((tag) => tag.id === id && tag.type === "park"))
+  const landIds = tagIds.filter((id) => allTags?.find((tag) => tag.id === id && tag.type === "land"))
   const attractionIds = tagIds.filter((id) => allTags?.find((tag) => tag.id === id && tag.type === "attraction"))
 
   // Delete existing tags
   await supabase.from("task_park_tags").delete().eq("task_id", taskId)
+  await supabase.from("task_land_tags").delete().eq("task_id", taskId)
   await supabase.from("task_attraction_tags").delete().eq("task_id", taskId)
 
   // Insert new park tags
@@ -636,6 +739,18 @@ export const updateTaskTags = async (taskId: string, tagIds: string[]) => {
     if (parkError) {
       console.error("Error updating task park tags:", parkError)
       throw parkError
+    }
+  }
+
+  // Insert new land tags
+  if (landIds.length > 0) {
+    const { error: landError } = await supabase
+      .from("task_land_tags")
+      .insert(landIds.map((landId) => ({ task_id: taskId, land_id: landId })))
+
+    if (landError) {
+      console.error("Error updating task land tags:", landError)
+      throw landError
     }
   }
 
@@ -711,15 +826,17 @@ export const deleteNote = async (id: string) => {
   }
 }
 
-// Funciones para Note Tags (nueva arquitectura)
+// Funciones para Note Tags (nueva arquitectura con lands)
 export const updateNoteTags = async (noteId: string, tagIds: string[]) => {
-  // Separate park IDs and attraction IDs
+  // Separate park IDs, land IDs, and attraction IDs
   const { data: allTags } = await supabase.from("unified_tags").select("*")
   const parkIds = tagIds.filter((id) => allTags?.find((tag) => tag.id === id && tag.type === "park"))
+  const landIds = tagIds.filter((id) => allTags?.find((tag) => tag.id === id && tag.type === "land"))
   const attractionIds = tagIds.filter((id) => allTags?.find((tag) => tag.id === id && tag.type === "attraction"))
 
   // Delete existing tags
   await supabase.from("note_park_tags").delete().eq("note_id", noteId)
+  await supabase.from("note_land_tags").delete().eq("note_id", noteId)
   await supabase.from("note_attraction_tags").delete().eq("note_id", noteId)
 
   // Insert new park tags
@@ -731,6 +848,18 @@ export const updateNoteTags = async (noteId: string, tagIds: string[]) => {
     if (parkError) {
       console.error("Error updating note park tags:", parkError)
       throw parkError
+    }
+  }
+
+  // Insert new land tags
+  if (landIds.length > 0) {
+    const { error: landError } = await supabase
+      .from("note_land_tags")
+      .insert(landIds.map((landId) => ({ note_id: noteId, land_id: landId })))
+
+    if (landError) {
+      console.error("Error updating note land tags:", landError)
+      throw landError
     }
   }
 
