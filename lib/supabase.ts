@@ -341,56 +341,102 @@ export const getTagsGrouped = async () => {
   return grouped
 }
 
-// Funciones para Movies (actualizada con fotos)
+// Funciones para Movies (VERSIÓN OPTIMIZADA con RPC)
 export const getMovies = async (options: { includeTags?: boolean; includePhotos?: boolean } = {}) => {
   const { includeTags = true, includePhotos = true } = options
   
-  const { data, error } = await supabase.from("movies").select("*").order("created_at")
+  const { data: movies, error } = await supabase.from("movies").select("*").order("created_at")
 
   if (error) {
     console.error("Error fetching movies:", error)
     throw error
   }
 
+  if (!movies || movies.length === 0) {
+    return []
+  }
+
   // Si no se necesitan tags ni fotos, retornar directamente
   if (!includeTags && !includePhotos) {
-    return (data || []).map(movie => ({
+    return movies.map(movie => ({
       ...movie,
       tags: [],
       photos: [],
     }))
   }
 
-  // Get tags and photos for each movie only if requested
-  const moviesWithTagsAndPhotos = await Promise.all(
-    (data || []).map(async (movie) => {
-      const movieData: any = { ...movie }
+  const movieIds = movies.map(movie => movie.id)
 
-      // Get tags only if requested
-      if (includeTags) {
-        const { data: tags } = await supabase.rpc("get_movie_tags", { movie_id_param: movie.id })
-        movieData.tags = tags || []
-      } else {
-        movieData.tags = []
-      }
+  // Ejecutar todas las consultas en paralelo - usando async functions para garantizar Promise correcto
+  const promises: Promise<any>[] = []
 
-      // Get photos only if requested
-      if (includePhotos) {
-        const { data: photos } = await supabase
+  // Fotos (si se necesitan)
+  if (includePhotos) {
+    promises.push(
+      (async () => {
+        return await supabase
           .from("movie_photos")
           .select("*")
-          .eq("movie_id", movie.id)
+          .in("movie_id", movieIds)
           .order("uploaded_at", { ascending: false })
-        movieData.photos = photos || []
-      } else {
-        movieData.photos = []
+      })()
+    )
+  } else {
+    promises.push(Promise.resolve({ data: [] }))
+  }
+
+  // Tags (si se necesitan) - UNA SOLA LLAMADA RPC
+  if (includeTags) {
+    promises.push(
+      (async () => {
+        return await supabase.rpc("get_multiple_movie_tags", { movie_ids_param: movieIds })
+      })()
+    )
+  } else {
+    promises.push(Promise.resolve({ data: [] }))
+  }
+
+  // Ejecutar todas las consultas en paralelo
+  const [photosResult, tagsResult] = await Promise.all(promises)
+
+  // Procesar fotos
+  const allPhotos: Record<string, any[]> = {}
+  if (includePhotos && photosResult.data) {
+    photosResult.data.forEach((photo: any) => {
+      if (!allPhotos[photo.movie_id]) {
+        allPhotos[photo.movie_id] = []
       }
+      allPhotos[photo.movie_id].push(photo)
+    })
+  }
 
-      return movieData
-    }),
-  )
+  // Procesar tags (ya vienen procesados del RPC)
+  const allTags: Record<string, any[]> = {}
+  if (includeTags && tagsResult.data) {
+    tagsResult.data.forEach((tag: any) => {
+      if (!allTags[tag.movie_id]) {
+        allTags[tag.movie_id] = []
+      }
+      allTags[tag.movie_id].push({
+        id: tag.id,
+        name: tag.name,
+        type: tag.type,
+        parent_id: tag.parent_id,
+        parent_name: tag.parent_name,
+        icon: tag.icon,
+        color: tag.color,
+        full_path: tag.full_path,
+        created_at: new Date().toISOString(),
+      })
+    })
+  }
 
-  return moviesWithTagsAndPhotos
+  // Combinar todo
+  return movies.map(movie => ({
+    ...movie,
+    tags: allTags[movie.id] || [],
+    photos: allPhotos[movie.id] || [],
+  }))
 }
 
 export const createMovie = async (movieData: Omit<Movie, "id" | "created_at" | "updated_at">) => {
@@ -677,37 +723,60 @@ export const updateMovieTags = async (movieId: string, tagIds: string[]) => {
   }
 }
 
-// Funciones para Tasks
+// Funciones para Tasks (VERSIÓN OPTIMIZADA con RPC)
 export const getTasks = async (options: { includeTags?: boolean } = {}) => {
   const { includeTags = true } = options
   
-  const { data, error } = await supabase.from("tasks").select("*").order("due_date", { nullsFirst: false })
+  const { data: tasks, error } = await supabase.from("tasks").select("*").order("due_date", { nullsFirst: false })
 
   if (error) {
     console.error("Error fetching tasks:", error)
     throw error
   }
 
+  if (!tasks || tasks.length === 0) {
+    return []
+  }
+
   // Si no se necesitan tags, retornar directamente
   if (!includeTags) {
-    return (data || []).map(task => ({
+    return tasks.map(task => ({
       ...task,
       tags: [],
     }))
   }
 
-  // Get tags for each task only if requested
-  const tasksWithTags = await Promise.all(
-    (data || []).map(async (task) => {
-      const { data: tags } = await supabase.rpc("get_task_tags", { task_id_param: task.id })
-      return {
-        ...task,
-        tags: tags || [],
-      }
-    }),
-  )
+  const taskIds = tasks.map(task => task.id)
 
-  return tasksWithTags
+  // Obtener todas las tags usando RPC optimizado
+  const { data: tagsData } = await supabase.rpc("get_multiple_task_tags", { task_ids_param: taskIds })
+
+  // Procesar tags (ya vienen procesados del RPC)
+  const allTags: Record<string, any[]> = {}
+  if (tagsData) {
+    tagsData.forEach((tag: any) => {
+      if (!allTags[tag.task_id]) {
+        allTags[tag.task_id] = []
+      }
+      allTags[tag.task_id].push({
+        id: tag.id,
+        name: tag.name,
+        type: tag.type,
+        parent_id: tag.parent_id,
+        parent_name: tag.parent_name,
+        icon: tag.icon,
+        color: tag.color,
+        full_path: tag.full_path,
+        created_at: new Date().toISOString(),
+      })
+    })
+  }
+
+  // Combinar todo
+  return tasks.map(task => ({
+    ...task,
+    tags: allTags[task.id] || [],
+  }))
 }
 
 export const createTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
@@ -796,27 +865,60 @@ export const updateTaskTags = async (taskId: string, tagIds: string[]) => {
   }
 }
 
-// Funciones para Notes (actualizada con tags)
-export const getNotes = async () => {
-  const { data, error } = await supabase.from("notes").select("*").order("created_at", { ascending: false })
+// Funciones para Notes (VERSIÓN OPTIMIZADA con RPC)
+export const getNotes = async (options: { includeTags?: boolean } = {}) => {
+  const { includeTags = true } = options
+
+  const { data: notes, error } = await supabase.from("notes").select("*").order("created_at", { ascending: false })
 
   if (error) {
     console.error("Error fetching notes:", error)
     throw error
   }
 
-  // Get tags for each note
-  const notesWithTags = await Promise.all(
-    (data || []).map(async (note) => {
-      const { data: tags } = await supabase.rpc("get_note_tags", { note_id_param: note.id })
-      return {
-        ...note,
-        tags: tags || [],
-      }
-    }),
-  )
+  if (!notes || notes.length === 0) {
+    return []
+  }
 
-  return notesWithTags
+  // Si no se necesitan tags, retornar directamente
+  if (!includeTags) {
+    return notes.map(note => ({
+      ...note,
+      tags: [],
+    }))
+  }
+
+  const noteIds = notes.map(note => note.id)
+
+  // Obtener todas las tags usando RPC optimizado
+  const { data: tagsData } = await supabase.rpc("get_multiple_note_tags", { note_ids_param: noteIds })
+
+  // Procesar tags (ya vienen procesados del RPC)
+  const allTags: Record<string, any[]> = {}
+  if (tagsData) {
+    tagsData.forEach((tag: any) => {
+      if (!allTags[tag.note_id]) {
+        allTags[tag.note_id] = []
+      }
+      allTags[tag.note_id].push({
+        id: tag.id,
+        name: tag.name,
+        type: tag.type,
+        parent_id: tag.parent_id,
+        parent_name: tag.parent_name,
+        icon: tag.icon,
+        color: tag.color,
+        full_path: tag.full_path,
+        created_at: new Date().toISOString(),
+      })
+    })
+  }
+
+  // Combinar todo
+  return notes.map(note => ({
+    ...note,
+    tags: allTags[note.id] || [],
+  }))
 }
 
 export const createNote = async (noteData: Omit<Note, "id" | "created_at" | "updated_at">) => {

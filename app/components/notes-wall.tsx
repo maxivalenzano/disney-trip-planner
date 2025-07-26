@@ -55,7 +55,7 @@ export default function NotesWall() {
   const loadNotes = async () => {
     try {
       setLoading(true)
-      const data = await getNotes()
+      const data = await getNotes({ includeTags: true })
       setNotes(data || [])
     } catch (error) {
       console.error("Error loading notes:", error)
