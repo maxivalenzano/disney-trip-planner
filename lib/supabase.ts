@@ -342,7 +342,9 @@ export const getTagsGrouped = async () => {
 }
 
 // Funciones para Movies (actualizada con fotos)
-export const getMovies = async () => {
+export const getMovies = async (options: { includeTags?: boolean; includePhotos?: boolean } = {}) => {
+  const { includeTags = true, includePhotos = true } = options
+  
   const { data, error } = await supabase.from("movies").select("*").order("created_at")
 
   if (error) {
@@ -350,24 +352,41 @@ export const getMovies = async () => {
     throw error
   }
 
-  // Get tags and photos for each movie
+  // Si no se necesitan tags ni fotos, retornar directamente
+  if (!includeTags && !includePhotos) {
+    return (data || []).map(movie => ({
+      ...movie,
+      tags: [],
+      photos: [],
+    }))
+  }
+
+  // Get tags and photos for each movie only if requested
   const moviesWithTagsAndPhotos = await Promise.all(
     (data || []).map(async (movie) => {
-      // Get tags
-      const { data: tags } = await supabase.rpc("get_movie_tags", { movie_id_param: movie.id })
+      const movieData: any = { ...movie }
 
-      // Get photos
-      const { data: photos } = await supabase
-        .from("movie_photos")
-        .select("*")
-        .eq("movie_id", movie.id)
-        .order("uploaded_at", { ascending: false })
-
-      return {
-        ...movie,
-        tags: tags || [],
-        photos: photos || [],
+      // Get tags only if requested
+      if (includeTags) {
+        const { data: tags } = await supabase.rpc("get_movie_tags", { movie_id_param: movie.id })
+        movieData.tags = tags || []
+      } else {
+        movieData.tags = []
       }
+
+      // Get photos only if requested
+      if (includePhotos) {
+        const { data: photos } = await supabase
+          .from("movie_photos")
+          .select("*")
+          .eq("movie_id", movie.id)
+          .order("uploaded_at", { ascending: false })
+        movieData.photos = photos || []
+      } else {
+        movieData.photos = []
+      }
+
+      return movieData
     }),
   )
 
@@ -659,7 +678,9 @@ export const updateMovieTags = async (movieId: string, tagIds: string[]) => {
 }
 
 // Funciones para Tasks
-export const getTasks = async () => {
+export const getTasks = async (options: { includeTags?: boolean } = {}) => {
+  const { includeTags = true } = options
+  
   const { data, error } = await supabase.from("tasks").select("*").order("due_date", { nullsFirst: false })
 
   if (error) {
@@ -667,7 +688,15 @@ export const getTasks = async () => {
     throw error
   }
 
-  // Get tags for each task
+  // Si no se necesitan tags, retornar directamente
+  if (!includeTags) {
+    return (data || []).map(task => ({
+      ...task,
+      tags: [],
+    }))
+  }
+
+  // Get tags for each task only if requested
   const tasksWithTags = await Promise.all(
     (data || []).map(async (task) => {
       const { data: tags } = await supabase.rpc("get_task_tags", { task_id_param: task.id })

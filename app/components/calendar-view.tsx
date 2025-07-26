@@ -54,8 +54,8 @@ export default function CalendarView() {
     try {
       setLoading(true)
 
-      // Load movies with dates
-      const movies = await getMovies()
+      // Load movies with dates (sin tags ni fotos para optimizar)
+      const movies = await getMovies({ includeTags: false, includePhotos: false })
       const movieEvents: CalendarEvent[] =
         movies
           ?.filter((movie) => movie.watch_date)
@@ -71,8 +71,8 @@ export default function CalendarView() {
             watch_date: movie.watch_date,
           })) || []
 
-      // Load tasks with due dates
-      const tasks = await getTasks()
+      // Load tasks with due dates (sin tags para optimizar)
+      const tasks = await getTasks({ includeTags: false })
       const taskEvents: CalendarEvent[] =
         tasks
           ?.filter((task) => task.due_date)

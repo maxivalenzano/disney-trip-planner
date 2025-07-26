@@ -185,12 +185,12 @@ export default function HomePage() {
         setTripDate(new Date(trip.start_date))
       }
 
-      // Cargar estadísticas de películas
-      const movies = await getMovies()
+      // Cargar estadísticas de películas (sin tags ni fotos para optimizar)
+      const movies = await getMovies({ includeTags: false, includePhotos: false })
       const watchedMovies = movies?.filter((m) => m.watched).length || 0
 
-      // Cargar estadísticas de tareas
-      const tasks = await getTasks()
+      // Cargar estadísticas de tareas (sin tags para optimizar)
+      const tasks = await getTasks({ includeTags: false })
       const completedTasks = tasks?.filter((t) => t.completed).length || 0
 
       setStats({
