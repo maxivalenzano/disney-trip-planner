@@ -1,16 +1,19 @@
 "use client"
 
+import { Plus, MapPin, Zap, Users, Edit, Trash2 } from "lucide-react"
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import PriorityBadge from "./priority-badge"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Star, Plus, MapPin, Clock, Heart, Zap, Users, Edit, Trash2, MoreHorizontal, ChevronDown, ChevronUp } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useToast } from "@/hooks/use-toast"
+import { sortByPriority } from "@/lib/priority-utils"
 import {
   getParks,
   createPark,
@@ -26,9 +29,6 @@ import {
   type Land,
   type Attraction,
 } from "@/lib/supabase"
-import { useToast } from "@/hooks/use-toast"
-import PriorityBadge from "./priority-badge"
-import { sortByPriority } from "@/lib/priority-utils"
 
 export default function ParksManager() {
   const [parks, setParks] = useState<Park[]>([])
@@ -195,10 +195,10 @@ export default function ParksManager() {
 
       setParks(
         parks.map((park) =>
-          park.id === newLand.parkId 
-            ? { ...park, lands: [...(park.lands || []), { ...land, attractions: [] }] } 
-            : park
-        )
+          park.id === newLand.parkId
+            ? { ...park, lands: [...(park.lands || []), { ...land, attractions: [] }] }
+            : park,
+        ),
       )
 
       setNewLand({
@@ -242,7 +242,7 @@ export default function ParksManager() {
         parks.map((park) => ({
           ...park,
           lands: park.lands?.map((l) => (l.id === editingLand.id ? { ...updatedLand, attractions: l.attractions } : l)),
-        }))
+        })),
       )
 
       setEditingLand(null)
@@ -275,7 +275,7 @@ export default function ParksManager() {
         parks.map((park) => ({
           ...park,
           lands: park.lands?.filter((l) => l.id !== land.id),
-        }))
+        })),
       )
 
       toast({
@@ -310,11 +310,11 @@ export default function ParksManager() {
         parks.map((park) => ({
           ...park,
           lands: park.lands?.map((land) =>
-            land.id === newAttraction.landId 
-              ? { ...land, attractions: [...(land.attractions || []), attraction] } 
-              : land
+            land.id === newAttraction.landId
+              ? { ...land, attractions: [...(land.attractions || []), attraction] }
+              : land,
           ),
-        }))
+        })),
       )
 
       setNewAttraction({
@@ -361,7 +361,7 @@ export default function ParksManager() {
             ...land,
             attractions: land.attractions?.map((a) => (a.id === editingAttraction.id ? updatedAttraction : a)),
           })),
-        }))
+        })),
       )
 
       setEditingAttraction(null)
@@ -397,7 +397,7 @@ export default function ParksManager() {
             ...land,
             attractions: land.attractions?.filter((a) => a.id !== attraction.id),
           })),
-        }))
+        })),
       )
 
       toast({
@@ -753,9 +753,9 @@ export default function ParksManager() {
                     <span className="flex-1">{park.name}</span>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           className="text-white hover:bg-white/20"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -899,4 +899,4 @@ export default function ParksManager() {
       )}
     </div>
   )
-} 
+}

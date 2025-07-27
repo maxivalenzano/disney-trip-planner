@@ -1,12 +1,5 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 import {
   Filter,
   Search,
@@ -19,9 +12,15 @@ import {
   Play,
   CheckSquare,
   Clock,
-  AlertTriangle,
 } from "lucide-react"
+import { useState } from "react"
 import TagSelector from "./tag-selector"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 
 interface FilterBarProps {
   // Filter states
@@ -33,14 +32,14 @@ interface FilterBarProps {
   onStatusFilterChange: (status: string) => void
   sortByDate: string
   onSortByDateChange: (sort: string) => void
-  
+
   // Display options
   showPhotos?: boolean
   onShowPhotosChange?: (show: boolean) => void
-  
+
   // Data for tag display
   allTags: any[]
-  
+
   // Configuration
   type: "movies" | "tasks"
   showFilters: boolean
@@ -90,10 +89,10 @@ export default function FilterBar({
   onShowFiltersChange,
 }: FilterBarProps) {
   const [openFilterTagSelector, setOpenFilterTagSelector] = useState(false)
-  
+
   const statusConfig = statusConfigs[type]
   const sortConfig = sortConfigs[type]
-  
+
   const clearFilters = () => {
     onSearchChange("")
     onFilterTagsChange([])
@@ -105,10 +104,10 @@ export default function FilterBar({
     return selectedFilterTags.map((tagId) => allTags.find((tag) => tag.id === tagId)).filter(Boolean) as any[]
   }
 
-  const activeFiltersCount = 
-    (searchTerm ? 1 : 0) + 
-    selectedFilterTags.length + 
-    (statusFilter !== "all" ? 1 : 0) + 
+  const activeFiltersCount =
+    (searchTerm ? 1 : 0) +
+    selectedFilterTags.length +
+    (statusFilter !== "all" ? 1 : 0) +
     (sortByDate !== "none" ? 1 : 0)
 
   const hasActiveFilters = activeFiltersCount > 0
@@ -116,9 +115,9 @@ export default function FilterBar({
   return {
     // Filter Button
     filterButton: (
-      <Button 
-        variant="outline" 
-        onClick={() => onShowFiltersChange(!showFilters)} 
+      <Button
+        variant="outline"
+        onClick={() => onShowFiltersChange(!showFilters)}
         className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
       >
         <Filter className="w-4 h-4" />
@@ -138,10 +137,10 @@ export default function FilterBar({
           <div className="flex items-center justify-between">
             <h3 className="font-medium text-gray-700">Filtros</h3>
             {hasActiveFilters && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={clearFilters} 
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
                 className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
               >
                 <X className="w-4 h-4 mr-1" />
@@ -191,9 +190,9 @@ export default function FilterBar({
             {selectedFilterTags.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {getFilteredTagsForDisplay().map((tag) => (
-                  <Badge 
-                    key={tag.id} 
-                    variant="secondary" 
+                  <Badge
+                    key={tag.id}
+                    variant="secondary"
                     className="text-xs flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 border-purple-200"
                   >
                     <span className="text-sm">{tag.icon}</span>
@@ -210,9 +209,8 @@ export default function FilterBar({
             <Label className="text-sm font-medium text-gray-700 mb-2 block">Estado</Label>
             <div className="flex gap-2">
               {Object.entries(statusConfig).map(([key, config]) => {
-                const Icon = config.icon
                 const isActive = statusFilter === key
-                
+
                 let buttonClass = ""
                 if (isActive) {
                   if (config.color === "purple") buttonClass = "bg-purple-600 text-white hover:bg-purple-700"
@@ -223,7 +221,7 @@ export default function FilterBar({
                   else if (config.color === "green") buttonClass = "border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
                   else if (config.color === "orange") buttonClass = "border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
                 }
-                
+
                 return (
                   <Button
                     key={key}
@@ -232,7 +230,7 @@ export default function FilterBar({
                     onClick={() => onStatusFilterChange(key)}
                     className={buttonClass}
                   >
-                        {/* <Icon className="w-4 h-4 mr-1" /> */}
+                    {/* <Icon className="w-4 h-4 mr-1" /> */}
                     {config.label}
                   </Button>
                 )
@@ -248,8 +246,8 @@ export default function FilterBar({
                 variant={sortByDate === "none" ? "default" : "outline"}
                 size="sm"
                 onClick={() => onSortByDateChange("none")}
-                className={sortByDate === "none" 
-                  ? "bg-purple-600 text-white hover:bg-purple-700" 
+                className={sortByDate === "none"
+                  ? "bg-purple-600 text-white hover:bg-purple-700"
                   : "border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
                 }
               >
@@ -259,24 +257,24 @@ export default function FilterBar({
                 variant={sortByDate === "asc" ? "default" : "outline"}
                 size="sm"
                 onClick={() => onSortByDateChange("asc")}
-                className={sortByDate === "asc" 
-                  ? "bg-blue-600 text-white hover:bg-blue-700" 
+                className={sortByDate === "asc"
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
                   : "border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
                 }
               >
-                            {/* <Calendar className="w-4 h-4 mr-1" /> */}
+                {/* <Calendar className="w-4 h-4 mr-1" /> */}
                 {sortConfig.ascLabel}
               </Button>
               <Button
                 variant={sortByDate === "desc" ? "default" : "outline"}
                 size="sm"
                 onClick={() => onSortByDateChange("desc")}
-                className={sortByDate === "desc" 
-                  ? "bg-indigo-600 text-white hover:bg-indigo-700" 
+                className={sortByDate === "desc"
+                  ? "bg-indigo-600 text-white hover:bg-indigo-700"
                   : "border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300"
                 }
               >
-                            {/* <Calendar className="w-4 h-4 mr-1" /> */}
+                {/* <Calendar className="w-4 h-4 mr-1" /> */}
                 {sortConfig.descLabel}
               </Button>
             </div>
@@ -294,10 +292,9 @@ export default function FilterBar({
                   </Badge>
                 )}
                 {statusFilter !== "all" && (
-                  <Badge variant="secondary" className={`flex items-center gap-1 ${
-                    statusFilter === "watched" || statusFilter === "completed"
-                      ? "bg-green-100 text-green-700" 
-                      : "bg-orange-100 text-orange-700"
+                  <Badge variant="secondary" className={`flex items-center gap-1 ${statusFilter === "watched" || statusFilter === "completed"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-orange-100 text-orange-700"
                   }`}>
                     {statusFilter === "watched" || statusFilter === "completed" ? (
                       <Check className="w-3 h-3" />
@@ -311,10 +308,9 @@ export default function FilterBar({
                   </Badge>
                 )}
                 {sortByDate !== "none" && (
-                  <Badge variant="secondary" className={`flex items-center gap-1 ${
-                    sortByDate === "asc" 
-                      ? "bg-blue-100 text-blue-700" 
-                      : "bg-indigo-100 text-indigo-700"
+                  <Badge variant="secondary" className={`flex items-center gap-1 ${sortByDate === "asc"
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-indigo-100 text-indigo-700"
                   }`}>
                     <Calendar className="w-3 h-3" />
                     {sortByDate === "asc" ? sortConfig.ascLabel : sortConfig.descLabel}
@@ -348,6 +344,6 @@ export default function FilterBar({
         onOpenChange={setOpenFilterTagSelector}
         title="Filtrar por Etiquetas"
       />
-    )
+    ),
   }
-} 
+}

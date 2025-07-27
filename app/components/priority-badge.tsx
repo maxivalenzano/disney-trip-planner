@@ -1,8 +1,8 @@
 import React from "react"
+import PriorityIcon from "./priority-icon"
 import { Badge } from "@/components/ui/badge"
 import { getPriorityConfig, type PriorityLevel } from "@/lib/priority-utils"
 import { cn } from "@/lib/utils"
-import PriorityIcon from "./priority-icon"
 
 interface PriorityBadgeProps {
   priority: PriorityLevel | string
@@ -17,20 +17,14 @@ export default function PriorityBadge({
   showIcon = true,
   showLabel = true,
   size = "md",
-  className
+  className,
 }: PriorityBadgeProps) {
   const config = getPriorityConfig(priority)
 
   const sizeClasses = {
     sm: "text-xs px-2 py-1",
     md: "text-sm px-2.5 py-1",
-    lg: "text-base px-3 py-1.5"
-  }
-
-  const letterSizeClasses = {
-    sm: "w-3 h-3 text-xs",
-    md: "w-4 h-4 text-xs",
-    lg: "w-5 h-5 text-sm"
+    lg: "text-base px-3 py-1.5",
   }
 
   return (
@@ -42,7 +36,7 @@ export default function PriorityBadge({
         config.borderColor,
         "border flex items-center gap-1 font-medium",
         sizeClasses[size],
-        className
+        className,
       )}
     >
       {showIcon && (
@@ -53,4 +47,4 @@ export default function PriorityBadge({
   )
 }
 
-export { PriorityBadge } 
+export { PriorityBadge }

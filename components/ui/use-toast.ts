@@ -67,7 +67,7 @@ const addToRemoveQueue = (toastId: string) => {
     toastTimeouts.delete(toastId)
     dispatch({
       type: "REMOVE_TOAST",
-      toastId: toastId,
+      toastId,
     })
   }, TOAST_REMOVE_DELAY)
 
@@ -86,7 +86,7 @@ export const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         toasts: state.toasts.map((t) =>
-          t.id === action.toast.id ? { ...t, ...action.toast } : t
+          t.id === action.toast.id ? { ...t, ...action.toast } : t,
         ),
       }
 
@@ -108,10 +108,10 @@ export const reducer = (state: State, action: Action): State => {
         toasts: state.toasts.map((t) =>
           t.id === toastId || toastId === undefined
             ? {
-                ...t,
-                open: false,
-              }
-            : t
+              ...t,
+              open: false,
+            }
+            : t,
         ),
       }
     }
@@ -165,7 +165,7 @@ function toast({ ...props }: Toast) {
   })
 
   return {
-    id: id,
+    id,
     dismiss,
     update,
   }

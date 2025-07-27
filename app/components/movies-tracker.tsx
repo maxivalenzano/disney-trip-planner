@@ -1,29 +1,38 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Film,
   Plus,
   ExternalLink,
   Play,
-  Check,
   Edit,
   Trash2,
-  MoreHorizontal,
   TagIcon,
   Calendar,
   Camera,
   Images,
 } from "lucide-react"
+import { useState, useEffect } from "react"
+
+import { useFilterLogic } from "../hooks/use-filter-logic"
+
+import AddMovieDialog from "./add-movie-dialog"
+import FilterButton from "./filter-button"
+import FilterPanel from "./filter-panel"
+import PhotoGallery from "./photo-gallery"
+import PriorityBadge from "./priority-badge"
+import TagSelector from "./tag-selector"
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/hooks/use-toast"
 import {
   getMovies,
   updateMovie,
@@ -33,15 +42,6 @@ import {
   type Movie,
   uploadMoviePhoto,
 } from "@/lib/supabase"
-import { useToast } from "@/hooks/use-toast"
-import { useFilterLogic } from "../hooks/use-filter-logic"
-import TagSelector from "./tag-selector"
-import PhotoGallery from "./photo-gallery"
-import FilterButton from "./filter-button"
-import FilterPanel from "./filter-panel"
-import AddMovieDialog from "./add-movie-dialog"
-import PriorityBadge from "./priority-badge"
-import { getPriorityConfig } from "@/lib/priority-utils"
 
 export default function MoviesTracker() {
   const [movies, setMovies] = useState<Movie[]>([])
@@ -120,10 +120,6 @@ export default function MoviesTracker() {
       console.error("Error loading tags:", error)
     }
   }
-
-
-
-
 
   const handleEditMovie = async () => {
     if (!editingMovie || !editingMovie.title) return
@@ -397,7 +393,7 @@ export default function MoviesTracker() {
         ...m,
         watched: true,
         jacqui_rating: updatedMovie.jacqui_rating,
-        maxi_rating: updatedMovie.maxi_rating
+        maxi_rating: updatedMovie.maxi_rating,
       } : m)))
 
       setRatingDialogOpen(false)
@@ -418,10 +414,6 @@ export default function MoviesTracker() {
       })
     }
   }
-
-
-
-
 
   if (loading) {
     return (
@@ -488,8 +480,6 @@ export default function MoviesTracker() {
         showFilters={showFilters}
         onShowFiltersChange={setShowFilters}
       />
-
-
 
       {/* Dialog para Agregar Película */}
       <AddMovieDialog
@@ -658,8 +648,6 @@ export default function MoviesTracker() {
         }}
       />
 
-
-
       {/* Photo Viewer Dialog */}
       {selectedMoviePhotos && (
         <Dialog open={!!selectedMoviePhotos} onOpenChange={closePhotoViewer}>
@@ -783,7 +771,7 @@ export default function MoviesTracker() {
                     width: `${filteredMovies.length > 0
                       ? (filteredMovies.filter((m) => m.watched).length / filteredMovies.length) * 100
                       : 0
-                      }%`,
+                    }%`,
                   }}
                 ></div>
               </div>
@@ -973,9 +961,9 @@ export default function MoviesTracker() {
                     >
                       <a href={movie.disney_plus_link} target="_blank" rel="noopener noreferrer">
                         <Play className="w-3 h-3 mr-1" />
-                        {movie.disney_plus_link.includes('justwatch.com') ? 'JustWatch' :
-                          movie.disney_plus_link.includes('disneyplus.com') ? 'Disney+' :
-                            'Ver online'}
+                        {movie.disney_plus_link.includes("justwatch.com") ? "JustWatch" :
+                          movie.disney_plus_link.includes("disneyplus.com") ? "Disney+" :
+                            "Ver online"}
                         <ExternalLink className="w-3 h-3 ml-1" />
                       </a>
                     </Button>

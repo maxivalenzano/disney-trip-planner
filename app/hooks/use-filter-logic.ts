@@ -36,7 +36,7 @@ export function useFilterLogic<T extends FilterableItem>({ items, type }: UseFil
       filtered = filtered.filter((item) => {
         const title = item.title.toLowerCase()
         const searchLower = searchTerm.toLowerCase()
-        
+
         if (type === "movies") {
           const notes = item.notes?.toLowerCase() || ""
           return title.includes(searchLower) || notes.includes(searchLower)
@@ -49,20 +49,20 @@ export function useFilterLogic<T extends FilterableItem>({ items, type }: UseFil
 
     // Filter by tags
     if (selectedFilterTags.length > 0) {
-      filtered = filtered.filter((item) => 
-        item.tags?.some((tag) => selectedFilterTags.includes(tag.id))
+      filtered = filtered.filter((item) =>
+        item.tags?.some((tag) => selectedFilterTags.includes(tag.id)),
       )
     }
 
     // Filter by status
     if (statusFilter !== "all") {
       if (type === "movies") {
-        filtered = filtered.filter((item) => 
-          statusFilter === "watched" ? item.watched : !item.watched
+        filtered = filtered.filter((item) =>
+          statusFilter === "watched" ? item.watched : !item.watched,
         )
       } else {
-        filtered = filtered.filter((item) => 
-          statusFilter === "completed" ? item.completed : statusFilter === "pending" ? !item.completed : true
+        filtered = filtered.filter((item) =>
+          statusFilter === "completed" ? item.completed : statusFilter === "pending" ? !item.completed : true,
         )
       }
     }
@@ -79,7 +79,7 @@ export function useFilterLogic<T extends FilterableItem>({ items, type }: UseFil
               return priorityOrder[aPriority] - priorityOrder[bPriority]
             }
             return 0
-            
+
           case "imdb_desc":
             if (type === "movies") {
               const aScore = a.imdb_score || 0
@@ -91,21 +91,21 @@ export function useFilterLogic<T extends FilterableItem>({ items, type }: UseFil
               return bScore - aScore
             }
             return 0
-            
+
           case "date_asc":
           case "date_desc":
-            const dateA = type === "movies" 
+            const dateA = type === "movies"
               ? (a.watch_date ? new Date(a.watch_date).getTime() : 0)
               : (a.due_date ? new Date(a.due_date).getTime() : 0)
-            const dateB = type === "movies" 
+            const dateB = type === "movies"
               ? (b.watch_date ? new Date(b.watch_date).getTime() : 0)
               : (b.due_date ? new Date(b.due_date).getTime() : 0)
-            
+
             if (sortBy === "date_asc") {
               // Sin fecha al final
               const aHasDate = type === "movies" ? !!a.watch_date : !!a.due_date
               const bHasDate = type === "movies" ? !!b.watch_date : !!b.due_date
-              
+
               if (!aHasDate && !bHasDate) return 0
               if (!aHasDate) return 1
               if (!bHasDate) return -1
@@ -114,13 +114,13 @@ export function useFilterLogic<T extends FilterableItem>({ items, type }: UseFil
               // Sin fecha al final
               const aHasDate = type === "movies" ? !!a.watch_date : !!a.due_date
               const bHasDate = type === "movies" ? !!b.watch_date : !!b.due_date
-              
+
               if (!aHasDate && !bHasDate) return 0
               if (!aHasDate) return 1
               if (!bHasDate) return -1
               return dateB - dateA
             }
-            
+
           default:
             return 0
         }
@@ -151,7 +151,7 @@ export function useFilterLogic<T extends FilterableItem>({ items, type }: UseFil
     showPhotos,
     showFilters,
     filteredItems,
-    
+
     // Actions
     setSearchTerm,
     setSelectedFilterTags,
@@ -161,4 +161,4 @@ export function useFilterLogic<T extends FilterableItem>({ items, type }: UseFil
     setShowFilters,
     clearFilters,
   }
-} 
+}

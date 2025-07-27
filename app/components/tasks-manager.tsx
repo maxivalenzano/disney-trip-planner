@@ -1,25 +1,24 @@
 "use client"
 
+import { CheckSquare, Plus, Calendar, Edit, Trash2, MoreHorizontal, Tag } from "lucide-react"
 import { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { CheckSquare, Plus, Calendar, AlertTriangle, Clock, Edit, Trash2, MoreHorizontal, Tag } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { getTasks, createTask, updateTask, deleteTask, updateTaskTags, getTagsGrouped, type Task } from "@/lib/supabase"
-import { useToast } from "@/hooks/use-toast"
 import { useFilterLogic } from "../hooks/use-filter-logic"
-import TagSelector from "./tag-selector"
 import FilterButton from "./filter-button"
 import FilterPanel from "./filter-panel"
-import PriorityBadge from "./priority-badge"
 import PriorityIcon from "./priority-icon"
+import TagSelector from "./tag-selector"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/hooks/use-toast"
 import { getPriorityBadgeClasses } from "@/lib/priority-utils"
+import { getTasks, createTask, updateTask, deleteTask, updateTaskTags, getTagsGrouped, type Task } from "@/lib/supabase"
 
 export default function TasksManager() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -262,8 +261,6 @@ export default function TasksManager() {
       })
     }
   }
-
-
 
   const isOverdue = (dueDate: string | null) => {
     if (!dueDate) return false
@@ -523,7 +520,7 @@ export default function TasksManager() {
         </Card>
       ) : (
         <div className="space-y-3">
-            {filteredTasks.map((task) => (
+          {filteredTasks.map((task) => (
             <Card
               key={task.id}
               className={`${getPriorityBadgeClasses(task.priority)} ${task.completed ? "" : "hover:bg-purple-50/50 hover:border-purple-200"} group transition-colors duration-200`}
@@ -595,7 +592,7 @@ export default function TasksManager() {
               </CardContent>
             </Card>
           ))}
-          </div>
+        </div>
       )}
     </div>
   )

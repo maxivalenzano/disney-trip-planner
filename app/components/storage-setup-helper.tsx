@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, XCircle, AlertTriangle, ExternalLink } from "lucide-react"
+import { useState } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 
@@ -20,7 +20,7 @@ export default function StorageSetupHelper() {
       setStatus("idle")
 
       // Intentar una operación simple en el bucket
-      const { data: testFiles, error: testError } = await supabase.storage.from("movie-photos").list("", { limit: 1 })
+      const { error: testError } = await supabase.storage.from("movie-photos").list("", { limit: 1 })
 
       if (!testError) {
         setStatus("success")

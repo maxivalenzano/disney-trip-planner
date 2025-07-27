@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
-import Link from "next/link"
 import { Calendar, Castle, Film, CheckSquare, Plane, Star, StickyNote } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useState, useEffect } from "react"
 import { getTrip } from "@/lib/supabase"
 
 export default function SharedLayout({ children }: { children: React.ReactNode }) {
@@ -46,7 +46,7 @@ export default function SharedLayout({ children }: { children: React.ReactNode }
           <div className="absolute bottom-4 left-8 text-lg animate-float delay-500">💫</div>
           <div className="absolute bottom-8 right-4 text-2xl animate-float delay-1500">⭐</div>
         </div>
-        
+
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-1">
             <div className="relative">
@@ -75,7 +75,7 @@ export default function SharedLayout({ children }: { children: React.ReactNode }
       {/* Navegación Inferior Inspiradora */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl px-0 py-0">
         <div className="grid w-full grid-cols-7 magical-sunset shadow-lg h-15 rounded-none">
-          <Link 
+          <Link
             href="/"
             className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
               isActive("/") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
@@ -84,7 +84,7 @@ export default function SharedLayout({ children }: { children: React.ReactNode }
             <Castle className="w-5 h-5" />
             Inicio
           </Link>
-          <Link 
+          <Link
             href="/parks"
             className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
               isActive("/parks") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
@@ -93,7 +93,7 @@ export default function SharedLayout({ children }: { children: React.ReactNode }
             <Star className="w-5 h-5" />
             Parques
           </Link>
-          <Link 
+          <Link
             href="/movies"
             className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
               isActive("/movies") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
@@ -102,7 +102,7 @@ export default function SharedLayout({ children }: { children: React.ReactNode }
             <Film className="w-5 h-5" />
             Películas
           </Link>
-          <Link 
+          <Link
             href="/notes"
             className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
               isActive("/notes") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
@@ -111,7 +111,7 @@ export default function SharedLayout({ children }: { children: React.ReactNode }
             <StickyNote className="w-5 h-5" />
             Notas
           </Link>
-          <Link 
+          <Link
             href="/tasks"
             className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
               isActive("/tasks") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
@@ -120,7 +120,7 @@ export default function SharedLayout({ children }: { children: React.ReactNode }
             <CheckSquare className="w-5 h-5" />
             Tareas
           </Link>
-          <Link 
+          <Link
             href="/calendar"
             className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
               isActive("/calendar") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
@@ -129,7 +129,7 @@ export default function SharedLayout({ children }: { children: React.ReactNode }
             <Calendar className="w-5 h-5" />
             Calendario
           </Link>
-          <Link 
+          <Link
             href="/trip"
             className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
               isActive("/trip") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
@@ -142,4 +142,4 @@ export default function SharedLayout({ children }: { children: React.ReactNode }
       </div>
     </div>
   )
-} 
+}

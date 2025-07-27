@@ -8,28 +8,28 @@ interface PriorityIconProps {
   className?: string
 }
 
-export default function PriorityIcon({ 
-  priority, 
+export default function PriorityIcon({
+  priority,
   size = "md",
-  className 
+  className,
 }: PriorityIconProps) {
   const config = getPriorityConfig(priority)
 
   const sizeClasses = {
     sm: "w-4 h-4 text-xs",
-    md: "w-5 h-5 text-sm", 
-    lg: "w-6 h-6 text-base"
+    md: "w-5 h-5 text-sm",
+    lg: "w-6 h-6 text-base",
   }
 
   return (
-    <div 
+    <div
       className={cn(
         "rounded-full border-2 flex items-center justify-center font-bold",
         config.textColor,
         config.bgColor,
         config.borderColor,
         sizeClasses[size],
-        className
+        className,
       )}
     >
       {config.letter}
@@ -37,4 +37,4 @@ export default function PriorityIcon({
   )
 }
 
-export { PriorityIcon } 
+export { PriorityIcon }

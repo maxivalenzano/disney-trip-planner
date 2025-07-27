@@ -1,14 +1,15 @@
 "use client"
 
+import { Plane, Hotel, Calendar, MapPin, Edit, Save, X } from "lucide-react"
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plane, Hotel, Calendar, MapPin, Edit, Save, X } from "lucide-react"
-import { getTrip, upsertTrip } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
+import { getTrip, upsertTrip } from "@/lib/supabase"
 
 export default function TripDetails() {
   const [isEditing, setIsEditing] = useState(false)
@@ -260,7 +261,7 @@ export default function TripDetails() {
               id="notes"
               value={tripData.notes}
               onChange={(e) => setTripData({ ...tripData, notes: e.target.value })}
-                              placeholder="Agregá cualquier información importante sobre su viaje..."
+              placeholder="Agregá cualquier información importante sobre su viaje..."
               rows={4}
             />
           ) : (

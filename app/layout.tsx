@@ -1,10 +1,10 @@
-import type React from "react"
+import { Analytics } from "@vercel/analytics/next"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import type React from "react"
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
 import SharedLayout from "./components/shared-layout"
-import { Analytics } from "@vercel/analytics/next"
+import { ThemeProvider } from "@/components/theme-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -13,40 +13,40 @@ export const metadata: Metadata = {
   description: "Planificá tu aventura mágica a Disney con tu pareja. Organizá juntos parques, películas, tareas y recuerdos especiales en un solo lugar encantado. Donde los sueños se hacen realidad para dos.",
   keywords: "Disney, planificador, viaje, parques, películas, magia, aventura, J&M, pareja, argentina",
   authors: [{ name: "Team J&M" }],
-  metadataBase: new URL('https://www.jymdisneyplanner.com.ar'),
+  metadataBase: new URL("https://www.jymdisneyplanner.com.ar"),
   alternates: {
-    canonical: 'https://www.jymdisneyplanner.com.ar'
+    canonical: "https://www.jymdisneyplanner.com.ar",
   },
   openGraph: {
     title: "J&M Disney Planner - Nuestra Aventura Mágica",
     description: "Planificá tu aventura mágica a Disney con tu pareja. Organizá juntos parques, películas, tareas y recuerdos especiales.",
-    url: 'https://www.jymdisneyplanner.com.ar',
-    siteName: 'J&M Disney Planner',
-    locale: 'es_AR',
-    type: 'website',
+    url: "https://www.jymdisneyplanner.com.ar",
+    siteName: "J&M Disney Planner",
+    locale: "es_AR",
+    type: "website",
   },
   viewport: {
-    width: 'device-width',
+    width: "device-width",
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
-    viewportFit: 'cover'
+    viewportFit: "cover",
   },
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#667eea' },
-    { media: '(prefers-color-scheme: dark)', color: '#764ba2' }
+    { media: "(prefers-color-scheme: light)", color: "#667eea" },
+    { media: "(prefers-color-scheme: dark)", color: "#764ba2" },
   ],
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
-    title: 'J&M Disney Planner'
+    statusBarStyle: "default",
+    title: "J&M Disney Planner",
   },
   formatDetection: {
     telephone: false,
     email: false,
-    address: false
+    address: false,
   },
-  generator: 'v0.dev'
+  generator: "v0.dev",
 }
 
 export default function RootLayout({

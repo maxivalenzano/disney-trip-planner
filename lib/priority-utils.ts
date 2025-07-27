@@ -19,11 +19,11 @@ export const PRIORITY_CONFIG: Record<PriorityLevel, PriorityConfig> = {
     textColor: "text-red-700",
   },
   medium: {
-    label: "Media", 
+    label: "Media",
     letter: "M",
     color: "orange",
     bgColor: "bg-orange-50",
-    borderColor: "border-orange-200", 
+    borderColor: "border-orange-200",
     textColor: "text-orange-700",
   },
   low: {
@@ -32,7 +32,7 @@ export const PRIORITY_CONFIG: Record<PriorityLevel, PriorityConfig> = {
     color: "blue",
     bgColor: "bg-blue-50",
     borderColor: "border-blue-200",
-    textColor: "text-blue-700", 
+    textColor: "text-blue-700",
   },
 }
 
@@ -65,4 +65,4 @@ export const sortByPriority = <T extends { priority: PriorityLevel | string }>(i
     const priorityB = priorityOrder[b.priority] || 0
     return priorityB - priorityA // Orden descendente (alta prioridad primero)
   })
-} 
+}

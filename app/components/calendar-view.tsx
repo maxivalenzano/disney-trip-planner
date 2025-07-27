@@ -1,12 +1,12 @@
 "use client"
 
+import { ChevronLeft, ChevronRight, Calendar, Film, CheckSquare, MapPin, ExternalLink } from "lucide-react"
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Calendar, Film, CheckSquare, MapPin, Clock, ExternalLink } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { getMovies, getTasks } from "@/lib/supabase"
 import PriorityBadge from "./priority-badge"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { getMovies, getTasks } from "@/lib/supabase"
 
 interface CalendarEvent {
   id: string
@@ -173,8 +173,6 @@ export default function CalendarView() {
     })
   }
 
-
-
   const days = getDaysInMonth(currentDate)
 
   if (loading) {
@@ -259,13 +257,13 @@ export default function CalendarView() {
                 <div
                   key={index}
                   className={`min-h-[80px] p-1 border-r border-b cursor-pointer transition-colors duration-200 ${day ? "bg-white hover:bg-purple-50/50" : "bg-gray-50"
-                    } ${isToday ? "bg-blue-50" : ""} ${isSelected ? "bg-purple-50 ring-2 ring-purple-300" : ""}`}
+                  } ${isToday ? "bg-blue-50" : ""} ${isSelected ? "bg-purple-50 ring-2 ring-purple-300" : ""}`}
                   onClick={() => handleDayClick(day)}
                 >
                   {day && (
                     <>
                       <div className={`text-sm font-medium mb-1 flex items-center justify-between ${isToday ? "text-blue-600" : "text-gray-900"
-                        } ${isSelected ? "text-purple-700" : ""}`}>
+                      } ${isSelected ? "text-purple-700" : ""}`}>
                         <span>{day}</span>
                         {hasEvents && (
                           <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center shadow-sm">
@@ -353,9 +351,9 @@ export default function CalendarView() {
                               className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 shadow-sm"
                             >
                               <a href={event.disney_plus_link} target="_blank" rel="noopener noreferrer">
-                                {event.disney_plus_link.includes('justwatch.com') ? 'JustWatch' :
-                                  event.disney_plus_link.includes('disneyplus.com') ? 'Disney+' :
-                                    'Ver online'}
+                                {event.disney_plus_link.includes("justwatch.com") ? "JustWatch" :
+                                  event.disney_plus_link.includes("disneyplus.com") ? "Disney+" :
+                                    "Ver online"}
                                 <ExternalLink className="w-3 h-3 ml-1" />
                               </a>
                             </Button>
@@ -371,7 +369,7 @@ export default function CalendarView() {
         </Card>
       )}
 
-      {/* Legend 
+      {/* Legend
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Leyenda</CardTitle>

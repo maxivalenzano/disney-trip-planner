@@ -1,17 +1,17 @@
 "use client"
 
+import { TagIcon, Search } from "lucide-react"
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import JustWatchSearch from "./justwatch-search"
+import TagSelector from "./tag-selector"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { TagIcon, Search } from "lucide-react"
-import { createMovie, updateMovieTags } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
-import TagSelector from "./tag-selector"
-import JustWatchSearch from "./justwatch-search"
+import { createMovie, updateMovieTags } from "@/lib/supabase"
 
 interface AddMovieDialogProps {
   open: boolean
@@ -29,7 +29,7 @@ export default function AddMovieDialog({ open, onOpenChange, onMovieAdded }: Add
     priority: "medium" as "high" | "medium" | "low",
     imdb_score: undefined as number | undefined,
   })
-  
+
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
   const [openTagSelector, setOpenTagSelector] = useState(false)
@@ -130,40 +130,40 @@ export default function AddMovieDialog({ open, onOpenChange, onMovieAdded }: Add
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 sm:space-y-4 pb-4">
-          {/* Búsqueda de JustWatch */}
+            {/* Búsqueda de JustWatch */}
             <div className="bg-purple-50 p-4 sm:p-3 rounded-lg border border-purple-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
                 <Label className="text-purple-700 font-medium text-base sm:text-sm">
                   Búsqueda inteligente
                 </Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setOpenJustWatchSearch(true)}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOpenJustWatchSearch(true)}
                   className="border-purple-200 text-purple-700 hover:bg-purple-100 hover:border-purple-300 h-10 sm:h-8 w-full sm:w-auto"
-                disabled={creating}
-              >
-                <Search className="w-4 h-4 mr-2" />
+                  disabled={creating}
+                >
+                  <Search className="w-4 h-4 mr-2" />
                 Buscar en JustWatch
-              </Button>
+                </Button>
+              </div>
             </div>
-          </div>
 
             <div className="space-y-2">
               <Label htmlFor="movieTitle" className="text-base sm:text-sm font-medium">
                 Título *
               </Label>
-            <Input
-              id="movieTitle"
-              value={newMovie.title}
-              onChange={(e) => setNewMovie({ ...newMovie, title: e.target.value })}
-              placeholder="Ej: El Rey León"
-              disabled={creating}
+              <Input
+                id="movieTitle"
+                value={newMovie.title}
+                onChange={(e) => setNewMovie({ ...newMovie, title: e.target.value })}
+                placeholder="Ej: El Rey León"
+                disabled={creating}
                 className="text-base sm:text-sm h-11 sm:h-10"
                 autoComplete="off"
-            />
-          </div>
+              />
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-4">
               <div className="space-y-2">
@@ -277,9 +277,9 @@ export default function AddMovieDialog({ open, onOpenChange, onMovieAdded }: Add
               )}
             </div>
 
-            <Button 
-              onClick={handleAddMovie} 
-              disabled={creating || !newMovie.title.trim()} 
+            <Button
+              onClick={handleAddMovie}
+              disabled={creating || !newMovie.title.trim()}
               className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md h-12 sm:h-10 text-base sm:text-sm font-medium touch-manipulation"
             >
               {creating ? (
@@ -313,4 +313,4 @@ export default function AddMovieDialog({ open, onOpenChange, onMovieAdded }: Add
       />
     </>
   )
-} 
+}

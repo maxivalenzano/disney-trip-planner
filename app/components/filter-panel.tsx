@@ -1,11 +1,5 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 import {
   Search,
   X,
@@ -18,8 +12,17 @@ import {
   CheckSquare,
   Clock,
 } from "lucide-react"
-import TagSelector from "./tag-selector"
+
 import { useFilterBar } from "../hooks/use-filter-bar"
+
+import TagSelector from "./tag-selector"
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 
 interface FilterPanelProps {
   searchTerm: string
@@ -216,38 +219,38 @@ export default function FilterPanel(props: FilterPanelProps) {
                   <Button
                     variant={sortBy === "none" ? "default" : "outline"}
                     size="sm"
-                      onClick={() => onSortByChange("none")}
-                      className={sortBy === "none"
-                        ? "bg-purple-600 text-white hover:bg-purple-700"
-                        : "border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
-                      }
-                    >
+                    onClick={() => onSortByChange("none")}
+                    className={sortBy === "none"
+                      ? "bg-purple-600 text-white hover:bg-purple-700"
+                      : "border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+                    }
+                  >
                       Sin orden
-                    </Button>
-                    <Button
-                      variant={sortBy === "date_asc" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => onSortByChange("date_asc")}
-                      className={sortBy === "date_asc"
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : "border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
-                      }
-                    >
-                      <Calendar className="w-4 h-4 mr-1" />
-                      {"ascLabel" in sortConfig ? sortConfig.ascLabel : "Más próximas"}
-                    </Button>
-                    <Button
-                      variant={sortBy === "date_desc" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => onSortByChange("date_desc")}
-                      className={sortBy === "date_desc"
-                        ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                        : "border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300"
-                      }
-                    >
-                      <Calendar className="w-4 h-4 mr-1" />
-                      {"descLabel" in sortConfig ? sortConfig.descLabel : "Más lejanas"}
-                    </Button>
+                  </Button>
+                  <Button
+                    variant={sortBy === "date_asc" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onSortByChange("date_asc")}
+                    className={sortBy === "date_asc"
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
+                    }
+                  >
+                    <Calendar className="w-4 h-4 mr-1" />
+                    {"ascLabel" in sortConfig ? sortConfig.ascLabel : "Más próximas"}
+                  </Button>
+                  <Button
+                    variant={sortBy === "date_desc" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onSortByChange("date_desc")}
+                    className={sortBy === "date_desc"
+                      ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                      : "border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300"
+                    }
+                  >
+                    <Calendar className="w-4 h-4 mr-1" />
+                    {"descLabel" in sortConfig ? sortConfig.descLabel : "Más lejanas"}
+                  </Button>
                 </>
               )}
             </div>
@@ -267,8 +270,8 @@ export default function FilterPanel(props: FilterPanelProps) {
                 {statusFilter !== "all" && (
                   <Badge variant="secondary" className={`flex items-center gap-1 ${statusFilter === "watched" || statusFilter === "completed"
                     ? "bg-green-100 text-green-700"
-                      : "bg-orange-100 text-orange-700"
-                    }`}>
+                    : "bg-orange-100 text-orange-700"
+                  }`}>
                     {statusFilter === "watched" || statusFilter === "completed" ? (
                       <Check className="w-3 h-3" />
                     ) : statusFilter === "unwatched" || statusFilter === "pending" ? (
@@ -283,8 +286,8 @@ export default function FilterPanel(props: FilterPanelProps) {
                 {sortBy !== "none" && (type !== "movies" || sortBy !== "priority") && (
                   <Badge variant="secondary" className={`flex items-center gap-1 ${sortBy === "date_asc" || sortBy === "priority"
                     ? "bg-blue-100 text-blue-700"
-                      : "bg-indigo-100 text-indigo-700"
-                    }`}>
+                    : "bg-indigo-100 text-indigo-700"
+                  }`}>
                     {sortBy === "priority" && "🎯"}
                     {sortBy === "imdb_desc" && "⭐"}
                     {sortBy.includes("date") && <Calendar className="w-3 h-3" />}
@@ -322,4 +325,4 @@ export default function FilterPanel(props: FilterPanelProps) {
       />
     </>
   )
-} 
+}

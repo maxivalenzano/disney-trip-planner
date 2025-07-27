@@ -1,15 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { StickyNote, Plus, Heart, Star, Sparkles, Trash2, Edit, MoreHorizontal, Tag } from "lucide-react"
+import { useState, useEffect } from "react"
+import TagSelector from "./tag-selector"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/hooks/use-toast"
 import {
   getNotes,
   createNote,
@@ -18,8 +20,6 @@ import {
   updateNoteTags,
   type Note,
 } from "@/lib/supabase"
-import { useToast } from "@/hooks/use-toast"
-import TagSelector from "./tag-selector"
 
 export default function NotesWall() {
   const [notes, setNotes] = useState<Note[]>([])

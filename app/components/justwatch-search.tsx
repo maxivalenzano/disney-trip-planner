@@ -1,15 +1,15 @@
 "use client"
 
+import { Search, ExternalLink, Calendar, Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, ExternalLink, Calendar, Loader2 } from "lucide-react"
-import { searchJustWatchMovies, type JustWatchResult } from "@/lib/justwatch"
 import { useToast } from "@/hooks/use-toast"
+import { searchJustWatchMovies, type JustWatchResult } from "@/lib/justwatch"
 
 interface JustWatchSearchProps {
   open: boolean
@@ -80,9 +80,9 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
       justwatch_link: movie.justwatch_url,
       imdb_score: movie.imdb_score,
     })
-    
+
     onOpenChange(false)
-    
+
     toast({
       title: "¡Película seleccionada!",
       description: `${movie.title} se ha agregado al formulario`,
@@ -90,7 +90,7 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearch()
     }
   }
@@ -121,15 +121,15 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
                 disabled={searching}
                 className="text-base sm:text-sm h-11 sm:h-10"
               />
-              <Button 
-                onClick={handleSearch} 
+              <Button
+                onClick={handleSearch}
                 disabled={searching || !searchQuery.trim()}
                 className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white h-11 sm:h-10 px-4 sm:px-3 min-w-[48px]"
               >
                 {searching ? (
                   <Loader2 className="w-5 h-5 sm:w-4 sm:h-4 animate-spin" />
                 ) : (
-                    <Search className="w-5 h-5 sm:w-4 sm:h-4" />
+                  <Search className="w-5 h-5 sm:w-4 sm:h-4" />
                 )}
               </Button>
             </div>
@@ -150,7 +150,7 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
                     </div>
                   </div>
                 ) : searchResults.length > 0 ? (
-                    <div className="space-y-4 sm:space-y-3">
+                  <div className="space-y-4 sm:space-y-3">
                     {searchResults.map((movie) => (
                       <div
                         key={movie.id}
@@ -167,7 +167,7 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
                                 className="w-20 h-28 sm:w-16 sm:h-20 object-cover rounded border border-gray-200 shadow-sm"
                                 onError={(e) => {
                                   // Si el poster falla al cargar, ocultar la imagen
-                                  e.currentTarget.style.display = 'none'
+                                  e.currentTarget.style.display = "none"
                                 }}
                               />
                               {/* Puntaje IMDB */}
@@ -180,7 +180,7 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
                               )}
                             </div>
                           )}
-                          
+
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2 mb-2">
                               <h3 className="font-semibold text-gray-800 text-base sm:text-sm leading-tight">
@@ -193,7 +193,7 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
                                 </Badge>
                               )}
                             </div>
-                            
+
                             {movie.original_title && movie.original_title !== movie.title && (
                               <p className="text-sm text-gray-600 mb-3 leading-relaxed">
                                 Título original: {movie.original_title}
@@ -209,9 +209,9 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
                                 className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 h-10 sm:h-8 text-sm w-full sm:w-auto"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <a 
-                                  href={movie.justwatch_url} 
-                                  target="_blank" 
+                                <a
+                                  href={movie.justwatch_url}
+                                  target="_blank"
                                   rel="noopener noreferrer"
                                   className="flex items-center justify-center gap-2"
                                 >
@@ -236,27 +236,27 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
                       </div>
                     ))}
                   </div>
-                  ) : (
-                      <div className="text-center py-12 sm:py-8 px-4 text-gray-500">
-                        <Search className="w-16 h-16 sm:w-12 sm:h-12 mx-auto mb-4 sm:mb-2 opacity-50" />
-                        <p className="font-medium text-base sm:text-sm mb-3 sm:mb-1">
+                ) : (
+                  <div className="text-center py-12 sm:py-8 px-4 text-gray-500">
+                    <Search className="w-16 h-16 sm:w-12 sm:h-12 mx-auto mb-4 sm:mb-2 opacity-50" />
+                    <p className="font-medium text-base sm:text-sm mb-3 sm:mb-1">
                           No se encontraron películas en JustWatch
-                        </p>
-                        <p className="text-sm sm:text-xs mb-3 sm:mb-2">Intenta con:</p>
-                        <ul className="text-sm sm:text-xs space-y-2 sm:space-y-1 text-left max-w-xs mx-auto">
-                          <li className="flex items-center gap-2">
-                            <span className="text-purple-500">•</span>
-                            <span>Un título más específico</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="text-purple-500">•</span>
-                            <span>El título en inglés</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <span className="text-purple-500">•</span>
-                            <span>Solo el nombre principal (sin subtítulos)</span>
-                          </li>
-                        </ul>
+                    </p>
+                    <p className="text-sm sm:text-xs mb-3 sm:mb-2">Intenta con:</p>
+                    <ul className="text-sm sm:text-xs space-y-2 sm:space-y-1 text-left max-w-xs mx-auto">
+                      <li className="flex items-center gap-2">
+                        <span className="text-purple-500">•</span>
+                        <span>Un título más específico</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-purple-500">•</span>
+                        <span>El título en inglés</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-purple-500">•</span>
+                        <span>Solo el nombre principal (sin subtítulos)</span>
+                      </li>
+                    </ul>
                   </div>
                 )}
               </ScrollArea>
@@ -275,4 +275,4 @@ export default function JustWatchSearch({ open, onOpenChange, onMovieSelect }: J
       </DialogContent>
     </Dialog>
   )
-} 
+}

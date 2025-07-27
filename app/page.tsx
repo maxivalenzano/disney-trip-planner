@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { Wand2, Film, CheckSquare } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getTrip, getMovies, getTasks } from "@/lib/supabase"
 
@@ -10,98 +11,97 @@ import { getTrip, getMovies, getTasks } from "@/lib/supabase"
 const disneyQuotes = [
   {
     quote: "Todos nuestros sueños pueden hacerse realidad, si tenemos el coraje de perseguirlos.",
-    author: "Walt Disney"
+    author: "Walt Disney",
   },
   {
     quote: "La vida es una aventura atrevida o no es nada.",
-    author: "Helen Keller"
+    author: "Helen Keller",
   },
   {
     quote: "La imaginación es más importante que el conocimiento.",
-    author: "Albert Einstein"
+    author: "Albert Einstein",
   },
   {
     quote: "La manera de empezar es dejar de hablar y comenzar a hacer.",
-    author: "Walt Disney"
+    author: "Walt Disney",
   },
   {
     quote: "Es divertido hacer lo imposible.",
-    author: "Walt Disney"
+    author: "Walt Disney",
   },
   {
     quote: "Si puedes soñarlo, puedes lograrlo.",
-    author: "Walt Disney"
+    author: "Walt Disney",
   },
   {
     quote: "La risa es intemporal, la imaginación no tiene edad y los sueños son para siempre.",
-    author: "Walt Disney"
+    author: "Walt Disney",
   },
   {
     quote: "Cuanto más te gustes a ti mismo, menos serás como los demás, y eso es lo que te hace único.",
-    author: "Walt Disney"
+    author: "Walt Disney",
   },
   {
     quote: "Deja siempre que tu conciencia sea tu guía.",
-    author: "Pepe Grillo"
+    author: "Pepe Grillo",
   },
   {
     quote: "Segunda estrella a la derecha, y todo recto hasta el amanecer.",
-    author: "Peter Pan"
+    author: "Peter Pan",
   },
   {
     quote: "Incluso los milagros toman un poco de tiempo.",
-    author: "Hada Madrina"
+    author: "Hada Madrina",
   },
   {
     quote: "La magia está en creer en ti mismo.",
-    author: "Cenicienta"
+    author: "Cenicienta",
   },
   {
     quote: "El pasado puede doler, pero, como yo lo veo, puedes huir de él o aprender.",
-    author: "Rafiki (El Rey León)"
+    author: "Rafiki (El Rey León)",
   },
   {
     quote: "Ohana significa familia. Y tu familia nunca te abandona… ni te olvida.",
-    author: "Lilo (Lilo & Stitch)"
+    author: "Lilo (Lilo & Stitch)",
   },
   {
     quote: "La flor que florece en la adversidad es la más hermosa de todas.",
-    author: "El Emperador (Mulán)"
+    author: "El Emperador (Mulán)",
   },
   {
     quote: "La única forma de lograr lo que quieres en este mundo… es trabajando duro.",
-    author: "Tiana (La Princesa y el Sapo)"
+    author: "Tiana (La Princesa y el Sapo)",
   },
   {
     quote: "Las cosas que te hacen diferente son las que te hacen ser tú.",
-    author: "Piglet (Winnie Pooh)"
+    author: "Piglet (Winnie Pooh)",
   },
   {
     quote: "A veces el camino correcto no es el más fácil.",
-    author: "Pocahontas"
+    author: "Pocahontas",
   },
   {
     quote: "No dejes que nadie decida tu destino por ti.",
-    author: "Bella (La Bella y la Bestia)"
+    author: "Bella (La Bella y la Bestia)",
   },
   {
     quote: "Las aventuras les esperan a quienes se atreven a vivirlas.",
-    author: "Mérida (Valiente)"
+    author: "Mérida (Valiente)",
   },
   {
     quote: "Nunca es tarde para ser quien debiste ser.",
-    author: "Alicia (Alicia en el País de las Maravillas)"
+    author: "Alicia (Alicia en el País de las Maravillas)",
   },
   {
     quote: "Si sigues mirando atrás, nunca sabrás lo que hay delante.",
-    author: "Remy (Ratatouille)"
+    author: "Remy (Ratatouille)",
   },
   {
     quote: "El cambio es bueno, pequeña… el cambio es bueno.",
-    author: "Mufasa (El Rey León)"
-  }
-];
-
+    author: "Mufasa (El Rey León)",
+  },
+]
 
 // Frases de bienvenida para J&M
 const welcomeMessages = [
@@ -112,8 +112,8 @@ const welcomeMessages = [
   "¡La magia los espera!",
   "¡Bienvenidos a la tierra de la fantasía!",
   "¡Su viaje mágico está por empezar!",
-  "¡Bienvenidos al reino de la imaginación!"
-];
+  "¡Bienvenidos al reino de la imaginación!",
+]
 
 // Frases de cuenta regresiva para J&M
 const countdownMessages = [
@@ -124,8 +124,8 @@ const countdownMessages = [
   "días para emocionarse juntos",
   "días para compartir la alegría",
   "días para dejarse sorprender",
-  "días para maravillarse como pareja"
-];
+  "días para maravillarse como pareja",
+]
 
 // Frases de llamada a la acción para J&M
 const callToActionMessages = [
@@ -136,7 +136,7 @@ const callToActionMessages = [
   "¡Construyan recuerdos mágicos, juntos!",
   "¡Exploren cada rincón de la felicidad!",
   "¡Sean protagonistas de su propia aventura!",
-  "¡Hagan que cada momento cuente!"
+  "¡Hagan que cada momento cuente!",
 ]
 
 export default function HomePage() {
@@ -288,7 +288,7 @@ export default function HomePage() {
       <div className="grid grid-cols-2 gap-4">
         <Card
           className="relative overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 border-blue-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 magical-hover cursor-pointer"
-          onClick={() => router.push('/movies')}
+          onClick={() => router.push("/movies")}
         >
           <div className="absolute top-3 right-3 text-2xl animate-spin">🎬</div>
           <CardContent className="p-6 text-center relative z-10">
@@ -305,7 +305,7 @@ export default function HomePage() {
 
         <Card
           className="relative overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 border-green-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 magical-hover cursor-pointer"
-          onClick={() => router.push('/tasks')}
+          onClick={() => router.push("/tasks")}
         >
           <div className="absolute top-3 right-3 text-2xl animate-bounce">📝</div>
           <CardContent className="p-6 text-center relative z-10">

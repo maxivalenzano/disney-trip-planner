@@ -1,12 +1,12 @@
 "use client"
 
+import { Tag, ChevronRight, ChevronDown } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tag, ChevronRight, ChevronDown } from "lucide-react"
 import { getTagsGrouped, type Tag as TagType } from "@/lib/supabase"
 
 interface TagSelectorProps {
@@ -38,7 +38,7 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
       // Auto-expand parks and lands that have selected items
       const newExpandedParks = new Set<string>()
       const newExpandedLands = new Set<string>()
-      
+
       Object.entries(grouped).forEach(([parkId, tags]) => {
         // Check if any tag in this park is selected
         const hasSelectedTag = tags.some((tag) => selectedTags.includes(tag.id))
@@ -50,7 +50,7 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
         tags.forEach((tag) => {
           if (tag.type === "land") {
             const landHasSelectedAttraction = tags.some(
-              (t) => t.type === "attraction" && t.parent_id === tag.id && selectedTags.includes(t.id)
+              (t) => t.type === "attraction" && t.parent_id === tag.id && selectedTags.includes(t.id),
             )
             if (landHasSelectedAttraction || selectedTags.includes(tag.id)) {
               newExpandedLands.add(tag.id)
@@ -58,7 +58,7 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
           }
         })
       })
-      
+
       setExpandedParks(newExpandedParks)
       setExpandedLands(newExpandedLands)
     } catch (error) {
@@ -76,7 +76,7 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
       const landsInPark = Object.values(tagsGrouped).flat()
         .filter(tag => tag.type === "land" && tag.parent_id === parkId)
         .map(tag => tag.id)
-      
+
       const newExpandedLands = new Set(expandedLands)
       landsInPark.forEach(landId => newExpandedLands.delete(landId))
       setExpandedLands(newExpandedLands)
@@ -111,9 +111,9 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
 
   // Group tags by hierarchy: park -> lands -> attractions
   const getHierarchicalTags = () => {
-    const result: { [parkId: string]: { 
-      park: TagType, 
-      lands: { [landId: string]: { land: TagType, attractions: TagType[] } } 
+    const result: { [parkId: string]: {
+      park: TagType,
+      lands: { [landId: string]: { land: TagType, attractions: TagType[] } }
     } } = {}
 
     Object.entries(tagsGrouped).forEach(([parkId, tags]) => {
@@ -298,4 +298,4 @@ export default function TagSelector({ selectedTags, onTagsChange, open, onOpenCh
       </DialogContent>
     </Dialog>
   )
-} 
+}

@@ -1,13 +1,13 @@
 "use client"
 
+import { X, ChevronLeft, ChevronRight, Edit, Trash2, Camera, Plus } from "lucide-react"
 import { useState } from "react"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { X, ChevronLeft, ChevronRight, Edit, Trash2, Camera, Plus } from "lucide-react"
-import { type MoviePhoto, updateMoviePhotoCaption, deleteMoviePhoto } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
+import { type MoviePhoto, updateMoviePhotoCaption, deleteMoviePhoto } from "@/lib/supabase"
 
 interface PhotoGalleryProps {
   photos: MoviePhoto[]

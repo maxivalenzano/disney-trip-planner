@@ -344,7 +344,7 @@ export const getTagsGrouped = async () => {
 // Funciones para Movies (VERSIÓN OPTIMIZADA con RPC)
 export const getMovies = async (options: { includeTags?: boolean; includePhotos?: boolean } = {}) => {
   const { includeTags = true, includePhotos = true } = options
-  
+
   const { data: movies, error } = await supabase.from("movies").select("*").order("created_at")
 
   if (error) {
@@ -379,7 +379,7 @@ export const getMovies = async (options: { includeTags?: boolean; includePhotos?
           .select("*")
           .in("movie_id", movieIds)
           .order("uploaded_at", { ascending: false })
-      })()
+      })(),
     )
   } else {
     promises.push(Promise.resolve({ data: [] }))
@@ -390,7 +390,7 @@ export const getMovies = async (options: { includeTags?: boolean; includePhotos?
     promises.push(
       (async () => {
         return await supabase.rpc("get_multiple_movie_tags", { movie_ids_param: movieIds })
-      })()
+      })(),
     )
   } else {
     promises.push(Promise.resolve({ data: [] }))
@@ -726,7 +726,7 @@ export const updateMovieTags = async (movieId: string, tagIds: string[]) => {
 // Funciones para Tasks (VERSIÓN OPTIMIZADA con RPC)
 export const getTasks = async (options: { includeTags?: boolean } = {}) => {
   const { includeTags = true } = options
-  
+
   const { data: tasks, error } = await supabase.from("tasks").select("*").order("due_date", { nullsFirst: false })
 
   if (error) {
