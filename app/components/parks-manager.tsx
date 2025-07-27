@@ -30,6 +30,52 @@ import {
   type Attraction,
 } from "@/lib/supabase"
 
+const DISNEY_COLORS = [
+  // Existentes - mantenidos para compatibilidad
+  { value: "from-blue-400 to-purple-500", label: "🔮 Azul Mágico a Púrpura" },
+  { value: "from-green-400 to-blue-500", label: "🌊 Verde Esmeralda a Azul" },
+  { value: "from-red-400 to-pink-500", label: "🌹 Rojo Coral a Rosa" },
+  { value: "from-yellow-400 to-orange-500", label: "☀️ Amarillo Dorado a Naranja" },
+  { value: "from-purple-400 to-pink-500", label: "💜 Púrpura Místico a Rosa" },
+  { value: "from-blue-400 to-cyan-500", label: "❄️ Azul Elsa a Cyan" },
+  { value: "from-green-400 to-yellow-500", label: "🍃 Verde Tinker Bell a Amarillo" },
+  { value: "from-pink-400 to-purple-500", label: "🦄 Rosa Encantado a Púrpura" },
+  // Nuevos colores mágicos de Disney
+  { value: "from-amber-400 to-yellow-500", label: "✨ Dorado Mágico" },
+  { value: "from-teal-400 to-blue-500", label: "🧜‍♀️ Turquesa Ariel" },
+  { value: "from-indigo-400 to-purple-600", label: "🌌 Violeta Cósmico" },
+  { value: "from-emerald-400 to-green-500", label: "🐸 Verde Encantado" },
+  { value: "from-rose-400 to-pink-600", label: "🌸 Rosa Aurora" },
+  { value: "from-sky-400 to-blue-600", label: "☁️ Azul Cielo Mágico" },
+  { value: "from-orange-400 to-red-500", label: "🔥 Naranja Fuego Dragón" },
+  { value: "from-violet-400 to-purple-600", label: "🔮 Violeta Hechizo" },
+] as const
+
+interface ColorSelectorProps {
+  value: string
+  onChange: (color: string) => void
+  label: string
+}
+
+function ColorSelector({ value, onChange, label }: ColorSelectorProps) {
+  return (
+    <div>
+      <Label>{label}</Label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full p-2 border rounded"
+      >
+        {DISNEY_COLORS.map((color) => (
+          <option key={color.value} value={color.value}>
+            {color.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
 export default function ParksManager() {
   const [parks, setParks] = useState<Park[]>([])
   const [loading, setLoading] = useState(true)
@@ -558,24 +604,15 @@ export default function ParksManager() {
                 placeholder="🏰"
               />
             </div>
-            <div>
-              <Label>Color del parque</Label>
-              <select
-                value={editingPark ? editingPark.color : newPark.color}
-                onChange={(e) =>
-                  editingPark
-                    ? setEditingPark({ ...editingPark, color: e.target.value })
-                    : setNewPark({ ...newPark, color: e.target.value })
-                }
-                className="w-full p-2 border rounded"
-              >
-                <option value="from-blue-400 to-purple-500">Azul a Púrpura</option>
-                <option value="from-green-400 to-blue-500">Verde a Azul</option>
-                <option value="from-red-400 to-pink-500">Rojo a Rosa</option>
-                <option value="from-yellow-400 to-orange-500">Amarillo a Naranja</option>
-                <option value="from-purple-400 to-pink-500">Púrpura a Rosa</option>
-              </select>
-            </div>
+            <ColorSelector
+              value={editingPark ? editingPark.color : newPark.color}
+              onChange={(color) =>
+                editingPark
+                  ? setEditingPark({ ...editingPark, color })
+                  : setNewPark({ ...newPark, color })
+              }
+              label="Color del parque"
+            />
             <Button onClick={editingPark ? handleEditPark : handleAddPark} disabled={creating} className="w-full">
               {creating ? "Guardando..." : editingPark ? "Actualizar Parque" : "Agregar Parque"}
             </Button>
@@ -629,24 +666,15 @@ export default function ParksManager() {
                 placeholder="🏰"
               />
             </div>
-            <div>
-              <Label>Color de la land</Label>
-              <select
-                value={editingLand ? editingLand.color : newLand.color}
-                onChange={(e) =>
-                  editingLand
-                    ? setEditingLand({ ...editingLand, color: e.target.value })
-                    : setNewLand({ ...newLand, color: e.target.value })
-                }
-                className="w-full p-2 border rounded"
-              >
-                <option value="from-purple-400 to-pink-500">Púrpura a Rosa</option>
-                <option value="from-blue-400 to-cyan-500">Azul a Cyan</option>
-                <option value="from-green-400 to-yellow-500">Verde a Amarillo</option>
-                <option value="from-red-400 to-orange-500">Rojo a Naranja</option>
-                <option value="from-pink-400 to-purple-500">Rosa a Púrpura</option>
-              </select>
-            </div>
+            <ColorSelector
+              value={editingLand ? editingLand.color : newLand.color}
+              onChange={(color) =>
+                editingLand
+                  ? setEditingLand({ ...editingLand, color })
+                  : setNewLand({ ...newLand, color })
+              }
+              label="Color de la land"
+            />
             <Button onClick={editingLand ? handleEditLand : handleAddLand} disabled={creating} className="w-full">
               {creating ? "Guardando..." : editingLand ? "Actualizar Land" : "Agregar Land"}
             </Button>
