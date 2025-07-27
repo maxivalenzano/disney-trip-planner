@@ -149,7 +149,6 @@ export default function HomePage() {
     totalTasks: 0,
     completedTasks: 0,
   })
-  const [loading, setLoading] = useState(true)
   const [currentQuote, setCurrentQuote] = useState(disneyQuotes[0])
   const [welcomeMessage, setWelcomeMessage] = useState(welcomeMessages[0])
   const [countdownMessage, setCountdownMessage] = useState(countdownMessages[0])
@@ -157,7 +156,6 @@ export default function HomePage() {
 
   useEffect(() => {
     loadDashboardData()
-    // Cambiar frases aleatoriamente cada 10 segundos
     const interval = setInterval(() => {
       setCurrentQuote(disneyQuotes[Math.floor(Math.random() * disneyQuotes.length)])
       setWelcomeMessage(welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)])
@@ -177,19 +175,14 @@ export default function HomePage() {
 
   const loadDashboardData = async () => {
     try {
-      setLoading(true)
-
-      // Cargar datos del viaje
       const trip = await getTrip()
       if (trip && trip.start_date) {
         setTripDate(new Date(trip.start_date))
       }
 
-      // Cargar estadísticas de películas (sin tags ni fotos para optimizar)
       const movies = await getMovies({ includeTags: false, includePhotos: false })
       const watchedMovies = movies?.filter((m) => m.watched).length || 0
 
-      // Cargar estadísticas de tareas (sin tags para optimizar)
       const tasks = await getTasks({ includeTags: false })
       const completedTasks = tasks?.filter((t) => t.completed).length || 0
 
@@ -201,14 +194,8 @@ export default function HomePage() {
       })
     } catch (error) {
       console.error("Error loading dashboard data:", error)
-    } finally {
-      setLoading(false)
     }
   }
-
-  const movieProgress = stats.totalMovies > 0 ? (stats.watchedMovies / stats.totalMovies) * 100 : 0
-  const taskProgress = stats.totalTasks > 0 ? (stats.completedTasks / stats.totalTasks) * 100 : 0
-  const overallProgress = (movieProgress + taskProgress) / 2
 
   return (
     <div className="space-y-6">

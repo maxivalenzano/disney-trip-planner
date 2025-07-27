@@ -1,5 +1,5 @@
 import { Analytics } from "@vercel/analytics/next"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import type React from "react"
 import "./globals.css"
@@ -25,17 +25,6 @@ export const metadata: Metadata = {
     locale: "es_AR",
     type: "website",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: "cover",
-  },
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#667eea" },
-    { media: "(prefers-color-scheme: dark)", color: "#764ba2" },
-  ],
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -47,6 +36,18 @@ export const metadata: Metadata = {
     address: false,
   },
   generator: "v0.dev",
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#667eea" },
+    { media: "(prefers-color-scheme: dark)", color: "#764ba2" },
+  ],
 }
 
 export default function RootLayout({
