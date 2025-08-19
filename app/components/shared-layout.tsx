@@ -1,34 +1,19 @@
 "use client"
 
-import type React from "react"
-
+import { Calendar, Castle, Film, CheckSquare, Plane, Star, StickyNote } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
-import { usePathname, useRouter } from "next/navigation"
-import { Calendar, Castle, Film, CheckSquare, Plane, Star, StickyNote, Menu, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { KeepAliveStatus } from "./keep-alive-status"
+import { getTrip } from "@/lib/supabase"
 
-interface SharedLayoutProps {
-  children: React.ReactNode
-}
-
-const navigation = [
-  { name: "Inicio", href: "/", icon: Castle },
-  { name: "Parques", href: "/parks", icon: Star },
-  { name: "Películas", href: "/movies", icon: Film },
-  { name: "Notas", href: "/notes", icon: StickyNote },
-  { name: "Tareas", href: "/tasks", icon: CheckSquare },
-  { name: "Calendario", href: "/calendar", icon: Calendar },
-  { name: "Viaje", href: "/trip", icon: Plane },
-]
-
-export default function SharedLayout({ children }: SharedLayoutProps) {
-  const pathname = usePathname()
-  const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
+export default function SharedLayout({ children }: { children: React.ReactNode }) {
   const [tripDate, setTripDate] = useState<Date>(new Date("2024-06-15"))
   const [daysUntilTrip, setDaysUntilTrip] = useState(0)
+  const pathname = usePathname()
+
+  useEffect(() => {
+    loadTripData()
+  }, [])
 
   useEffect(() => {
     const today = new Date()
@@ -37,15 +22,23 @@ export default function SharedLayout({ children }: SharedLayoutProps) {
     setDaysUntilTrip(Math.max(0, diffDays))
   }, [tripDate])
 
-  const handleNavigation = (href: string) => {
-    router.push(href)
-    setIsOpen(false)
+  const loadTripData = async () => {
+    try {
+      const trip = await getTrip()
+      if (trip && trip.start_date) {
+        setTripDate(new Date(trip.start_date))
+      }
+    } catch (error) {
+      console.error("Error loading trip data:", error)
+    }
   }
+
+  const isActive = (path: string) => pathname === path
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       {/* Header Inspirador */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 rounded-b-[2rem] shadow-2xl">
+      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-6 rounded-b-[2rem] shadow-2xl">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-4 left-4 text-2xl animate-float">✨</div>
@@ -55,103 +48,96 @@ export default function SharedLayout({ children }: SharedLayoutProps) {
         </div>
 
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 md:hidden">
-                  <Menu className="w-6 h-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-80 p-0">
-                <div className="flex flex-col h-full">
-                  <div className="p-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-xl font-bold">J&M Disney Planner</h2>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setIsOpen(false)}
-                        className="text-white hover:bg-white/20"
-                      >
-                        <X className="w-5 h-5" />
-                      </Button>
-                    </div>
-                    <KeepAliveStatus showDetails={true} />
-                  </div>
-
-                  <nav className="flex-1 p-4">
-                    <div className="space-y-2">
-                      {navigation.map((item) => {
-                        const Icon = item.icon
-                        const isActive = pathname === item.href
-                        return (
-                          <Button
-                            key={item.name}
-                            variant={isActive ? "default" : "ghost"}
-                            className={`w-full justify-start gap-3 ${
-                              isActive
-                                ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
-                                : "hover:bg-gray-100"
-                            }`}
-                            onClick={() => handleNavigation(item.href)}
-                          >
-                            <Icon className="w-5 h-5" />
-                            {item.name}
-                          </Button>
-                        )
-                      })}
-                    </div>
-                  </nav>
-                </div>
-              </SheetContent>
-            </Sheet>
-
+          <div className="flex items-center gap-1">
             <div className="relative">
-              <Castle className="w-8 h-8 text-yellow-300 animate-pulse" />
+              <Castle className="w-10 h-10 text-yellow-300 animate-pulse" />
               <div className="absolute -top-1 -right-1 text-lg animate-bounce">✨</div>
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
-                J&M Disney Planner
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
+                Disney Planner
               </h1>
-              <p className="text-sm opacity-90 font-medium">Donde los sueños cobran vida ✨</p>
+              <p className="text-sm opacity-90 font-medium">Team J&M ✨</p>
             </div>
           </div>
-
-          <div className="flex items-center gap-4">
-            <div className="hidden md:block">
-              <KeepAliveStatus />
-            </div>
-            <div className="text-center bg-white/20 backdrop-blur-sm rounded-2xl p-3 border border-white/30">
-              <div className="text-2xl font-bold text-yellow-300 animate-pulse">{daysUntilTrip}</div>
-              <div className="text-xs font-medium">días soñados</div>
-            </div>
+          <div className="text-center bg-white/20 backdrop-blur-sm rounded-2xl py-2 px-1 border border-white/30">
+            <div className="text-3xl font-bold text-yellow-300 animate-pulse">{daysUntilTrip}</div>
+            <div className="text-xs font-medium">días</div>
           </div>
         </div>
       </div>
 
       {/* Contenido Principal */}
-      <div className="p-6 pb-24">{children}</div>
+      <div className="p-6 pb-24">
+        {children}
+      </div>
 
-      {/* Navegación Inferior */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl px-0 py-0 md:hidden">
-        <div className="grid grid-cols-7 magical-sunset shadow-lg h-16 rounded-none">
-          {navigation.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
-            return (
-              <button
-                key={item.name}
-                onClick={() => handleNavigation(item.href)}
-                className={`flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition-all duration-300 rounded-xl mx-1 my-1 ${
-                  isActive ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : "text-white hover:bg-white/20"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="truncate">{item.name}</span>
-              </button>
-            )
-          })}
+      {/* Navegación Inferior Inspiradora */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl px-0 py-0">
+        <div className="grid w-full grid-cols-7 magical-sunset shadow-lg h-15 rounded-none">
+          <Link
+            href="/"
+            className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
+              isActive("/") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
+            }`}
+          >
+            <Castle className="w-5 h-5" />
+            Inicio
+          </Link>
+          <Link
+            href="/parks"
+            className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
+              isActive("/parks") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
+            }`}
+          >
+            <Star className="w-5 h-5" />
+            Parques
+          </Link>
+          <Link
+            href="/movies"
+            className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
+              isActive("/movies") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
+            }`}
+          >
+            <Film className="w-5 h-5" />
+            Películas
+          </Link>
+          <Link
+            href="/notes"
+            className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
+              isActive("/notes") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
+            }`}
+          >
+            <StickyNote className="w-5 h-5" />
+            Notas
+          </Link>
+          <Link
+            href="/tasks"
+            className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
+              isActive("/tasks") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
+            }`}
+          >
+            <CheckSquare className="w-5 h-5" />
+            Tareas
+          </Link>
+          <Link
+            href="/calendar"
+            className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
+              isActive("/calendar") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
+            }`}
+          >
+            <Calendar className="w-5 h-5" />
+            Calendario
+          </Link>
+          <Link
+            href="/trip"
+            className={`flex flex-col gap-1 text-[11px] font-bold rounded-xl transition-all duration-300 items-center justify-center text-white hover:bg-white/20 ${
+              isActive("/trip") ? "bg-white/90 text-purple-600 shadow-lg backdrop-blur-sm" : ""
+            }`}
+          >
+            <Plane className="w-5 h-5" />
+            Viaje
+          </Link>
         </div>
       </div>
     </div>
