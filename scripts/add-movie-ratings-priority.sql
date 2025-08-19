@@ -30,4 +30,4 @@ COMMENT ON COLUMN movies.maxi_rating IS 'Maxi personal rating after watching (0-
 -- Update existing movies to have medium priority by default
 UPDATE movies 
 SET priority = 'medium' 
-WHERE priority IS NULL; 
+WHERE priority IS NULL;
